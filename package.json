@@ -1,6 +1,6 @@
 {
-  "name": "template",
-  "version": "1.4.0",
+  "name": "data-uri-builder",
+  "version": "1.0.0",
   "private": true,
   "workspaces": [
     "packages/*"

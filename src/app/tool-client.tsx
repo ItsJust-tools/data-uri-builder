@@ -6,19 +6,41 @@ import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from
 import {
   toolConfig,
   templateBaseVersion,
-  notepadTool,
+  dataUriTool,
+  buildDataUri,
   ToolCanvas,
   ToolToolbar,
   ToolSidebar,
 } from '@/tool';
+import type { InputMode, DataUriType, DataUriState } from '@/tool';
 
-const DEFAULT_FONT_SIZE = 16;
-const MIN_FONT_SIZE = 8;
-const MAX_FONT_SIZE = 72;
+function generateDataUri(state: DataUriState): { uri: string; error: string } {
+  let mimeType = state.selectedMimeType;
+  if (mimeType === 'custom') {
+    mimeType = state.customMimeType.trim();
+    if (!mimeType) return { uri: '', error: 'Please enter a custom MIME type' };
+  }
+
+  let content = '';
+  let contentError = '';
+
+  if (state.inputMode === 'text') {
+    if (!state.textInput) return { uri: '', error: 'Please enter some text content' };
+    content = state.textInput;
+  } else if (state.inputMode === 'file') {
+    if (!state.fileBytes) return { uri: '', error: 'Please upload a file' };
+    content = state.fileBytes;
+  } else if (state.inputMode === 'url') {
+    if (!state.urlInput) return { uri: '', error: 'Please enter a URL' };
+    return { uri: '', error: 'URL fetching is not available in client-side mode. Please download the file and use file mode.' };
+  }
+
+  return { uri: buildDataUri(mimeType, content, state.isBase64 && state.inputMode !== 'text' ? false : state.isBase64), error: '' };
+}
 
 export default function ToolClient() {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const tool = useTool(notepadTool, canvasRef);
+  const tool = useTool(dataUriTool, canvasRef);
   const setToolData = tool.state.setData;
   const showToast = tool.toast;
   const [isSharing, setIsSharing] = useState(false);
@@ -26,27 +48,14 @@ export default function ToolClient() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(
     () => typeof window !== 'undefined' && window.innerWidth > 768 && toolConfig.features.sidebar
   );
-  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
 
-  const title = tool.state.data.title?.trim() || toolConfig.name;
-  const [isEditingBrand, setIsEditingBrand] = useState(false);
-  const [editValue, setEditValue] = useState(title);
+  const title = toolConfig.name;
 
   useEffect(() => {
     document.title = title;
   }, [title]);
 
-  const handleTextChange = useCallback(
-    (text: string) => {
-      setToolData((prev) => ({ ...prev, text }));
-    },
-    [setToolData]
-  );
-
-  const handleFontSizeChange = useCallback((delta: number) => {
-    setFontSize((prev) => Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, prev + delta)));
-  }, []);
-
+  // Load shared state from URL
   useEffect(() => {
     if (hasLoadedSharedState.current) return;
     hasLoadedSharedState.current = true;
@@ -57,7 +66,7 @@ export default function ToolClient() {
       const serialized = decompressFromEncodedURIComponent(encodedState);
       if (!serialized) throw new Error('Invalid shared URL');
       const parsed: unknown = JSON.parse(serialized);
-      const deserialized = notepadTool.deserialize(parsed);
+      const deserialized = dataUriTool.deserialize(parsed);
       if (!deserialized.success) throw new Error(deserialized.error);
       setToolData(deserialized.data);
       showToast('Loaded state from shared URL', 'success');
@@ -67,10 +76,125 @@ export default function ToolClient() {
     }
   }, [setToolData, showToast]);
 
+  // Set default MIME type based on uploaded file extension
+  const mimeTypeForFile = useCallback((fileName: string): DataUriType => {
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    const mimeMap: Record<string, DataUriType> = {
+      html: 'text/html',
+      css: 'text/css',
+      js: 'text/javascript',
+      json: 'application/json',
+      xml: 'application/xml',
+      svg: 'image/svg+xml',
+      png: 'image/png',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      webp: 'image/webp',
+      gif: 'image/gif',
+      pdf: 'application/pdf',
+      woff2: 'font/woff2',
+      woff: 'font/woff',
+      mp3: 'audio/mpeg',
+      ogg: 'audio/ogg',
+      mp4: 'video/mp4',
+      webm: 'video/webm',
+    };
+    return mimeMap[ext] || 'application/octet-stream' as any;
+  }, []);
+
+  const handleInputModeChange = useCallback(
+    (mode: InputMode) => {
+      setToolData((prev) => ({ ...prev, inputMode: mode }));
+    },
+    [setToolData]
+  );
+
+  const handleTextInputChange = useCallback(
+    (text: string) => {
+      setToolData((prev) => ({ ...prev, textInput: text }));
+    },
+    [setToolData]
+  );
+
+  const handleFileUpload = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          // result is a data: URL; extract base64
+          const base64 = result.split(',')[1] || '';
+          // Auto-detect MIME type from file
+          const detectedMime = mimeTypeForFile(file.name);
+          setToolData((prev) => ({
+            ...prev,
+            fileName: file.name,
+            fileSize: file.size,
+            fileBytes: base64,
+            selectedMimeType: detectedMime === 'application/octet-stream' ? prev.selectedMimeType : detectedMime,
+            isBase64: true,
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    },
+    [setToolData, mimeTypeForFile]
+  );
+
+  const handleUrlInputChange = useCallback(
+    (url: string) => {
+      setToolData((prev) => ({ ...prev, urlInput: url }));
+    },
+    [setToolData]
+  );
+
+  const handleMimeTypeChange = useCallback(
+    (mime: DataUriType) => {
+      setToolData((prev) => ({ ...prev, selectedMimeType: mime }));
+    },
+    [setToolData]
+  );
+
+  const handleCustomMimeChange = useCallback(
+    (mime: string) => {
+      setToolData((prev) => ({ ...prev, customMimeType: mime }));
+    },
+    [setToolData]
+  );
+
+  const handleBase64Toggle = useCallback(
+    (isBase64: boolean) => {
+      setToolData((prev) => ({ ...prev, isBase64 }));
+    },
+    [setToolData]
+  );
+
+  const handleGenerateUri = useCallback(() => {
+    const { uri, error } = generateDataUri(tool.state.data);
+    if (error) {
+      showToast(error, 'error');
+      setToolData((prev) => ({ ...prev, dataUri: '', error }));
+    } else {
+      setToolData((prev) => ({ ...prev, dataUri: uri, error: '' }));
+      showToast('Data URI generated!', 'success');
+    }
+  }, [tool.state.data, showToast, setToolData]);
+
+  const handleClear = useCallback(() => {
+    setToolData(dataUriTool.initialState);
+  }, [setToolData]);
+
+  const handleCopyUri = useCallback(async () => {
+    if (tool.state.data.dataUri) {
+      await navigator.clipboard.writeText(tool.state.data.dataUri);
+      showToast('Data URI copied to clipboard', 'success');
+    }
+  }, [tool.state.data.dataUri, showToast]);
+
   const handleShare = useCallback(async () => {
     setIsSharing(true);
     try {
-      const serialized = notepadTool.serialize(tool.state.data);
+      const serialized = dataUriTool.serialize(tool.state.data);
       const encodedState = compressToEncodedURIComponent(serialized);
       if (!encodedState) throw new Error('Failed to encode state for URL');
       const url = new URL(window.location.href);
@@ -98,28 +222,7 @@ export default function ToolClient() {
     }
   }, [showToast, tool.state.data, title]);
 
-  const toolbarActions = useMemo(
-    () => ({
-      ...tool.toolbarActions,
-      onBrandClick: () => {
-        setEditValue(title);
-        setIsEditingBrand(true);
-      },
-      isBrandEditing: isEditingBrand,
-      brandValue: isEditingBrand ? editValue : title,
-      onBrandChange: (value: string) => setEditValue(value),
-      onBrandCommit: () => {
-        const trimmed = editValue.trim();
-        setToolData((prev) => ({ ...prev, title: trimmed || undefined }));
-        setIsEditingBrand(false);
-      },
-      onBrandCancel: () => {
-        setEditValue(title);
-        setIsEditingBrand(false);
-      },
-    }),
-    [tool.toolbarActions, isEditingBrand, editValue, title, setToolData]
-  );
+  const toolbarActions = useMemo(() => tool.toolbarActions, [tool.toolbarActions]);
 
   const toolbarContent = (
     <>
@@ -137,18 +240,24 @@ export default function ToolClient() {
 
   const sidebarContent = (
     <ToolSidebar
-      text={tool.state.data.text}
-      fontSize={fontSize}
-      onFontSizeChange={handleFontSizeChange}
+      state={tool.state.data}
+      onInputModeChange={handleInputModeChange}
+      onTextInputChange={handleTextInputChange}
+      onFileUpload={handleFileUpload}
+      onUrlInputChange={handleUrlInputChange}
+      onMimeTypeChange={handleMimeTypeChange}
+      onCustomMimeChange={handleCustomMimeChange}
+      onBase64Toggle={handleBase64Toggle}
+      onGenerateUri={handleGenerateUri}
+      onClear={handleClear}
     />
   );
 
   const canvasContent = (
     <ToolCanvas
       canvasRef={canvasRef}
-      text={tool.state.data.text}
-      fontSize={fontSize}
-      onChange={handleTextChange}
+      state={tool.state.data}
+      onCopyUri={handleCopyUri}
     />
   );
 
@@ -168,7 +277,11 @@ export default function ToolClient() {
           'Ready'
         )}
       </span>
-      <span className="status-slot status-slot-font-size">{fontSize}px</span>
+      {tool.state.data.dataUri && (
+        <span className="status-slot status-slot-length">
+          {tool.state.data.dataUri.length.toLocaleString()} chars
+        </span>
+      )}
       <span className="status-slot status-slot-tool-version">Tool v{toolConfig.version}</span>
       <span className="status-slot status-slot-template-version">
         Template v{templateBaseVersion}

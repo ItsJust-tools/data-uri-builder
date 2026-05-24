@@ -1,29 +1,54 @@
 import type { Tool } from '@itsjust/core';
 import toolConfig from './tool.config';
-import type { NotepadState } from './types';
+import type { DataUriState } from './types';
 
-function isNotepadState(value: unknown): value is NotepadState {
+function isDataUriState(value: unknown): value is DataUriState {
   if (typeof value !== 'object' || value === null) return false;
-  const v = value as { text?: unknown; title?: unknown };
-  return typeof v.text === 'string' && (v.title === undefined || typeof v.title === 'string');
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.inputMode === 'string' &&
+    typeof v.textInput === 'string' &&
+    typeof v.fileName === 'string' &&
+    typeof v.selectedMimeType === 'string' &&
+    typeof v.customMimeType === 'string' &&
+    typeof v.dataUri === 'string' &&
+    typeof v.isBase64 === 'boolean' &&
+    typeof v.fileSize === 'number' &&
+    typeof v.urlInput === 'string'
+  );
 }
 
-export const notepadTool: Tool<NotepadState> = {
+function buildDataUri(mimeType: string, content: string, isBase64: boolean): string {
+  const charset = mimeType.startsWith('text/') && !isBase64 ? '' : ';base64';
+  return `data:${mimeType}${charset},${isBase64 ? content : encodeURIComponent(content)}`;
+}
+
+export const dataUriTool: Tool<DataUriState> = {
   id: toolConfig.id,
   name: toolConfig.name,
   version: toolConfig.version,
   config: toolConfig,
   initialState: {
-    text: '',
+    inputMode: 'text',
+    textInput: '',
+    fileName: '',
+    selectedMimeType: 'text/plain',
+    customMimeType: '',
+    dataUri: '',
+    isBase64: false,
+    fileSize: 0,
+    fileBytes: '',
+    error: '',
+    urlInput: '',
   },
   serialize: (state) => JSON.stringify(state, null, 2),
   deserialize: (data) => {
-    if (isNotepadState(data)) {
-      return { success: true, data: { text: data.text, title: data.title } };
+    if (isDataUriState(data)) {
+      return { success: true, data };
     }
     return {
       success: false,
-      error: 'Invalid data format: expected { text: string, title?: string }',
+      error: 'Invalid data format: expected DataUriState object',
     };
   },
   exporters: [
@@ -33,3 +58,5 @@ export const notepadTool: Tool<NotepadState> = {
     { format: 'pdf', loader: () => import('./exporters/pdf') },
   ],
 };
+
+export { buildDataUri };

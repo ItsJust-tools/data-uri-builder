@@ -12,11 +12,12 @@ import { cn } from '@/lib/utils';
 import { generateJsonLd, generateToolMetadata } from '@/lib/seo';
 import toolConfig from '@/tool/tool.config';
 import { getPublicSiteUrl, templateMetadata } from '@/tool/template-metadata';
-import { notepadTool } from '@/tool/tool-definition';
+import { dataUriTool, buildDataUri } from '@/tool/tool-definition';
 import { ToolCanvas } from '@/tool/components/tool-canvas';
 import { ToolSidebar } from '@/tool/components/tool-sidebar';
 import { ToolToolbar } from '@/tool/components/tool-toolbar';
 import type { ExporterLoader } from '@itsjust/core';
+import type { DataUriState, InputMode, DataUriType } from '@/tool/types';
 
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: ReactNode }) => (
@@ -92,20 +93,36 @@ describe('app and seo', () => {
   it('covers tool definition and helper exports', async () => {
     expect(cn('a', undefined, 'b', false, null, 'c')).toBe('a b c');
     expect(getPublicSiteUrl()).toBe('http://localhost:3000');
-    expect(notepadTool.deserialize({ text: 'x' })).toEqual({
+
+    // buildDataUri test
+    expect(buildDataUri('text/plain', 'Hello', false)).toBe('data:text/plain,Hello');
+    expect(buildDataUri('image/png', 'abc', true)).toBe('data:image/png;base64,abc');
+
+    // deserialize
+    const validState: DataUriState = {
+      inputMode: 'text',
+      textInput: 'Hello',
+      fileName: '',
+      selectedMimeType: 'text/plain',
+      customMimeType: '',
+      dataUri: '',
+      isBase64: false,
+      fileSize: 0,
+      fileBytes: '',
+      error: '',
+      urlInput: '',
+    };
+    expect(dataUriTool.deserialize(validState)).toEqual({
       success: true,
-      data: { text: 'x' },
+      data: validState,
     });
-    expect(notepadTool.deserialize({ nope: true })).toEqual({
+    expect(dataUriTool.deserialize({ nope: true })).toEqual({
       success: false,
-      error: 'Invalid data format: expected { text: string, title?: string }',
+      error: 'Invalid data format: expected DataUriState object',
     });
-    expect(notepadTool.serialize({ text: 'x' })).toContain('"text": "x"');
-    expect(notepadTool.deserialize({ text: 'x', title: 'My Note' })).toEqual({
-      success: true,
-      data: { text: 'x', title: 'My Note' },
-    });
-    const exporters = notepadTool.exporters ?? [];
+    expect(dataUriTool.serialize(validState)).toContain('"textInput": "Hello"');
+
+    const exporters = dataUriTool.exporters ?? [];
     expect(exporters).toHaveLength(4);
     const first = exporters[0];
     expect(first).toBeDefined();
@@ -116,16 +133,40 @@ describe('app and seo', () => {
   });
 
   it('renders tool components', () => {
+    const mockState: DataUriState = {
+      inputMode: 'text',
+      textInput: 'Hello World',
+      fileName: '',
+      selectedMimeType: 'text/plain',
+      customMimeType: '',
+      dataUri: '',
+      isBase64: false,
+      fileSize: 0,
+      fileBytes: '',
+      error: '',
+      urlInput: '',
+    };
+
     render(
       <>
         <ToolToolbar />
-        <ToolSidebar text="Hello world" fontSize={16} onFontSizeChange={() => {}} />
-        <ToolCanvas text="" fontSize={16} />
+        <ToolSidebar
+          state={mockState}
+          onInputModeChange={() => {}}
+          onTextInputChange={() => {}}
+          onFileUpload={() => {}}
+          onUrlInputChange={() => {}}
+          onMimeTypeChange={() => {}}
+          onCustomMimeChange={() => {}}
+          onBase64Toggle={() => {}}
+          onGenerateUri={() => {}}
+          onClear={() => {}}
+        />
+        <ToolCanvas state={mockState} />
       </>
     );
 
     expect(screen.getByRole('link', { name: 'Open help page' })).toBeInTheDocument();
-    expect(screen.getByText('11')).toBeInTheDocument(); // char count for "Hello world"
-    expect(screen.getByRole('application', { name: 'Notepad canvas' })).toBeInTheDocument();
+    expect(screen.getByRole('application', { name: 'Data URI Builder' })).toBeInTheDocument();
   });
 });

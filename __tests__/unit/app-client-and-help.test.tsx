@@ -38,7 +38,19 @@ vi.mock('@itsjust/core', () => ({
   ),
   useTool: () => ({
     state: {
-      data: { text: 'Hello' },
+      data: {
+        inputMode: 'text',
+        textInput: 'Hello World',
+        fileName: '',
+        selectedMimeType: 'text/plain',
+        customMimeType: '',
+        dataUri: '',
+        isBase64: false,
+        fileSize: 0,
+        fileBytes: '',
+        error: '',
+        urlInput: '',
+      },
       setData: mockSetData,
       isDirty: false,
       lastSaved: 'just now',
@@ -54,23 +66,27 @@ vi.mock('@itsjust/core', () => ({
 
 vi.mock('@/tool', () => ({
   toolConfig: {
-    id: 'simple-notepad',
-    name: 'Notepad',
+    id: 'data-uri-builder',
+    name: 'Data URI Builder',
     version: '1.0.0',
     features: { sidebar: true },
-    theme: { brand: 'Notepad' },
+    theme: { brand: 'Data URI Builder' },
   },
-  templateBaseVersion: '1.1.0',
-  notepadTool: {
+  templateBaseVersion: '1.4.0',
+  dataUriTool: {
     serialize: (state: unknown) => JSON.stringify(state),
-    deserialize: () => ({ success: true, data: { text: 'From Shared Url' } }),
+    deserialize: () => ({ success: true, data: { inputMode: 'text' } }),
   },
-  ToolCanvas: ({ text }: { text: string }) => <div>canvas:{text}</div>,
+  buildDataUri: (mime: string, content: string, isBase64: boolean) =>
+    `data:${mime}${isBase64 ? ';base64' : ''},${isBase64 ? content : encodeURIComponent(content)}`,
+  ToolCanvas: ({ state }: { state: { dataUri: string } }) => (
+    <div>canvas:{state.dataUri || 'empty'}</div>
+  ),
   ToolToolbar: () => <div>toolbar</div>,
-  ToolSidebar: ({ text }: { text: string }) => <div>sidebar:{text}</div>,
+  ToolSidebar: () => <div>sidebar</div>,
 }));
 
-describe('app client and help page', () => {
+describe('app client', () => {
   beforeEach(() => {
     mockSetData.mockReset();
     mockToast.mockReset();
@@ -88,6 +104,13 @@ describe('app client and help page', () => {
   it('renders dynamic tool client wrapper', () => {
     render(<ToolClientWrapper />);
     expect(screen.getByTestId('dynamic-tool-client')).toBeInTheDocument();
+  });
+
+  it('renders tool client with default state', () => {
+    render(<ToolClient />);
+    expect(screen.getByText('toolbar')).toBeInTheDocument();
+    expect(screen.getByText('sidebar')).toBeInTheDocument();
+    expect(screen.getByText('canvas:empty')).toBeInTheDocument();
   });
 
   it('handles share flow in tool client', async () => {

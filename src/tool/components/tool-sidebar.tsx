@@ -1,81 +1,201 @@
 'use client';
 
+import type { DataUriState, InputMode, DataUriType } from '../types';
+import { DEFAULT_MIME_TYPES } from '../types';
+
 interface ToolSidebarProps {
-  text: string;
-  fontSize?: number;
-  onFontSizeChange?: (delta: number) => void;
+  state: DataUriState;
+  onInputModeChange: (mode: InputMode) => void;
+  onTextInputChange: (text: string) => void;
+  onFileUpload: (file: File) => void;
+  onUrlInputChange: (url: string) => void;
+  onMimeTypeChange: (mime: DataUriType) => void;
+  onCustomMimeChange: (mime: string) => void;
+  onBase64Toggle: (isBase64: boolean) => void;
+  onGenerateUri: () => void;
+  onClear: () => void;
 }
 
-function countWords(text: string): number {
-  const trimmed = text.trim();
-  if (!trimmed) return 0;
-  return trimmed.split(/\s+/).length;
-}
-
-function countChars(text: string): number {
-  return text.length;
-}
-
-function countLines(text: string): number {
-  if (!text) return 0;
-  return text.split('\n').length;
-}
-
-export function ToolSidebar({ text, fontSize, onFontSizeChange }: ToolSidebarProps) {
-  const words = countWords(text);
-  const chars = countChars(text);
-  const lines = countLines(text);
-  const charsNoSpaces = text.replace(/\s/g, '').length;
-
+export function ToolSidebar({
+  state,
+  onInputModeChange,
+  onTextInputChange,
+  onFileUpload,
+  onUrlInputChange,
+  onMimeTypeChange,
+  onCustomMimeChange,
+  onBase64Toggle,
+  onGenerateUri,
+  onClear,
+}: ToolSidebarProps) {
   return (
-    <div className="notepad-sidebar">
+    <div className="datauri-sidebar">
+      {/* Input Mode Selector */}
       <div className="sidebar-section">
-        <h3>Document Stats</h3>
-        <dl className="stats-list">
-          <div className="stat-row">
-            <dt>Words</dt>
-            <dd>{words.toLocaleString()}</dd>
-          </div>
-          <div className="stat-row">
-            <dt>Characters</dt>
-            <dd>{chars.toLocaleString()}</dd>
-          </div>
-          <div className="stat-row">
-            <dt>Characters (no spaces)</dt>
-            <dd>{charsNoSpaces.toLocaleString()}</dd>
-          </div>
-          <div className="stat-row">
-            <dt>Lines</dt>
-            <dd>{lines.toLocaleString()}</dd>
-          </div>
-        </dl>
+        <h3>Input Source</h3>
+        <div className="input-mode-tabs" role="tablist" aria-label="Input source">
+          {(['text', 'file', 'url'] as InputMode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              role="tab"
+              className={`input-mode-tab ${state.inputMode === mode ? 'active' : ''}`}
+              onClick={() => onInputModeChange(mode)}
+              aria-selected={state.inputMode === mode}
+              aria-label={`${mode} input`}
+            >
+              {mode === 'text' && '📝'}
+              {mode === 'file' && '📁'}
+              {mode === 'url' && '🔗'}
+              {' '}{mode.charAt(0).toUpperCase() + mode.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {fontSize !== undefined && onFontSizeChange && (
-        <div className="sidebar-section">
-          <h3>Font Size</h3>
-          <div className="sidebar-font-controls">
-            <button
-              type="button"
-              className="font-btn"
-              onClick={() => onFontSizeChange(-2)}
-              aria-label="Decrease font size"
-              title="Decrease font size"
-            >
-              A−
-            </button>
-            <span className="font-size-display" aria-live="polite">
-              {fontSize}px
+      {/* Input Content */}
+      <div className="sidebar-section">
+        <h3>Content</h3>
+        {state.inputMode === 'text' && (
+          <div className="input-group">
+            <textarea
+              value={state.textInput}
+              onChange={(e) => onTextInputChange(e.target.value)}
+              className="datauri-textarea"
+              aria-label="Text input"
+              placeholder="Paste or type text content here..."
+              rows={8}
+            />
+            <span className="input-char-count">
+              {state.textInput.length.toLocaleString()} chars
             </span>
-            <button
-              type="button"
-              className="font-btn"
-              onClick={() => onFontSizeChange(2)}
-              aria-label="Increase font size"
-              title="Increase font size"
-            >
-              A+
-            </button>
+          </div>
+        )}
+
+        {state.inputMode === 'file' && (
+          <div className="input-group">
+            <div className="file-upload-zone">
+              <input
+                type="file"
+                id="file-upload"
+                className="file-input-hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) onFileUpload(file);
+                }}
+                aria-label="Choose a file to convert to data URI"
+              />
+              <label htmlFor="file-upload" className="file-upload-label">
+                <div className="file-upload-icon">📂</div>
+                <div className="file-upload-text">
+                  {state.fileName || 'Click to choose a file'}
+                </div>
+                {state.fileSize > 0 && (
+                  <div className="file-upload-size">
+                    {(state.fileSize / 1024).toFixed(1)} KB
+                  </div>
+                )}
+              </label>
+            </div>
+          </div>
+        )}
+
+        {state.inputMode === 'url' && (
+          <div className="input-group">
+            <input
+              type="url"
+              value={state.urlInput}
+              onChange={(e) => onUrlInputChange(e.target.value)}
+              className="datauri-url-input"
+              aria-label="URL input"
+              placeholder="https://example.com/image.png"
+            />
+            <p className="input-hint">
+              Enter a URL to fetch and convert its content. Note: CORS restrictions may apply.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* MIME Type */}
+      <div className="sidebar-section">
+        <h3>MIME Type</h3>
+        <div className="sidebar-column">
+          <select
+            value={state.selectedMimeType}
+            onChange={(e) => onMimeTypeChange(e.target.value as DataUriType)}
+            className="datauri-select"
+            aria-label="MIME type"
+          >
+            {DEFAULT_MIME_TYPES.map((mt) => (
+              <option key={mt.value} value={mt.value}>
+                {mt.label}
+              </option>
+            ))}
+          </select>
+          {state.selectedMimeType === 'custom' && (
+            <input
+              type="text"
+              value={state.customMimeType}
+              onChange={(e) => onCustomMimeChange(e.target.value)}
+              className="datauri-input"
+              aria-label="Custom MIME type"
+              placeholder="e.g. application/octet-stream"
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Encoding Options */}
+      <div className="sidebar-section">
+        <h3>Encoding</h3>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={state.isBase64}
+            onChange={(e) => onBase64Toggle(e.target.checked)}
+            aria-label="Use base64 encoding"
+          />
+          <span>Base64 encode</span>
+        </label>
+        {state.inputMode === 'text' && !state.isBase64 && (
+          <p className="input-hint">
+            Text content is URL-encoded by default. Enable base64 for binary-like text.
+          </p>
+        )}
+      </div>
+
+      {/* Generate & Clear */}
+      <div className="sidebar-section sidebar-actions">
+        <button
+          type="button"
+          className="datauri-btn datauri-btn-primary datauri-btn-full"
+          onClick={onGenerateUri}
+          disabled={
+            (state.inputMode === 'text' && !state.textInput) ||
+            (state.inputMode === 'file' && !state.fileBytes) ||
+            (state.inputMode === 'url' && !state.urlInput)
+          }
+          aria-label="Generate data URI"
+        >
+          Generate Data URI
+        </button>
+        {state.dataUri && (
+          <button
+            type="button"
+            className="datauri-btn datauri-btn-outline datauri-btn-full"
+            onClick={onClear}
+            aria-label="Clear and start over"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {state.error && (
+        <div className="sidebar-section">
+          <div className="error-message" role="alert">
+            {state.error}
           </div>
         </div>
       )}

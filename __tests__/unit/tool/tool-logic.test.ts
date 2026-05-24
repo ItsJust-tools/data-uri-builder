@@ -1,55 +1,76 @@
 import { describe, it, expect } from 'vitest';
 import { createMockToolState } from '@itsjust/core/testing';
-import { notepadTool } from '@/tool/tool-definition';
-import type { NotepadState } from '@/tool/types';
+import { dataUriTool, buildDataUri } from '@/tool/tool-definition';
+import type { DataUriState } from '@/tool/types';
 
-describe('Notepad logic', () => {
+const defaultState: DataUriState = {
+  inputMode: 'text',
+  textInput: '',
+  fileName: '',
+  selectedMimeType: 'text/plain',
+  customMimeType: '',
+  dataUri: '',
+  isBase64: false,
+  fileSize: 0,
+  fileBytes: '',
+  error: '',
+  urlInput: '',
+};
+
+describe('Data URI Builder logic', () => {
   it('initializes with default state', () => {
-    const state = createMockToolState<NotepadState>({
-      text: '',
-    });
-
-    expect(state.data.text).toBe('');
+    const state = createMockToolState<DataUriState>(defaultState);
+    expect(state.data.inputMode).toBe('text');
+    expect(state.data.textInput).toBe('');
+    expect(state.data.dataUri).toBe('');
   });
 
-  it('updates text', () => {
-    const state = createMockToolState<NotepadState>({
-      text: '',
-    });
+  it('builds data URI for plain text (non-base64)', () => {
+    const uri = buildDataUri('text/plain', 'Hello World', false);
+    expect(uri).toBe('data:text/plain,' + encodeURIComponent('Hello World'));
+  });
 
-    state.setData((prev) => ({ ...prev, text: 'Hello world' }));
-    expect(state.data.text).toBe('Hello world');
+  it('builds data URI for base64 content', () => {
+    const uri = buildDataUri('image/png', 'iVBORw0KGgo=', true);
+    expect(uri).toBe('data:image/png;base64,iVBORw0KGgo=');
+  });
+
+  it('builds data URI for HTML content', () => {
+    const uri = buildDataUri('text/html', '<h1>Title</h1>', false);
+    expect(uri).toContain('data:text/html,');
+    expect(uri).toContain(encodeURIComponent('<h1>Title</h1>'));
   });
 
   it('supports undo/redo', () => {
-    const state = createMockToolState<NotepadState>({
-      text: 'First',
+    const state = createMockToolState<DataUriState>({
+      ...defaultState,
+      textInput: 'First',
     });
 
-    state.setData((prev) => ({ ...prev, text: 'Second' }));
-    expect(state.data.text).toBe('Second');
+    state.setData((prev) => ({ ...prev, textInput: 'Second' }));
+    expect(state.data.textInput).toBe('Second');
     expect(state.canUndo).toBe(true);
 
     state.undo();
-    expect(state.data.text).toBe('First');
+    expect(state.data.textInput).toBe('First');
     expect(state.canRedo).toBe(true);
 
     state.redo();
-    expect(state.data.text).toBe('Second');
+    expect(state.data.textInput).toBe('Second');
   });
 });
 
-describe('Notepad deserialize', () => {
-  it('accepts valid notepad state object', () => {
-    const result = notepadTool.deserialize({ text: 'Valid' });
+describe('Data URI Builder deserialize', () => {
+  it('accepts valid state object', () => {
+    const result = dataUriTool.deserialize(defaultState);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.text).toBe('Valid');
+      expect(result.data.inputMode).toBe('text');
     }
   });
 
   it('rejects null data', () => {
-    const result = notepadTool.deserialize(null);
+    const result = dataUriTool.deserialize(null);
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain('Invalid data');
@@ -57,23 +78,15 @@ describe('Notepad deserialize', () => {
   });
 
   it('rejects non-object data', () => {
-    const result = notepadTool.deserialize('string');
+    const result = dataUriTool.deserialize('string');
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain('Invalid data');
     }
   });
 
-  it('rejects object without text', () => {
-    const result = notepadTool.deserialize({ count: 42 });
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error).toContain('Invalid data');
-    }
-  });
-
-  it('rejects object with non-string text', () => {
-    const result = notepadTool.deserialize({ text: 123 });
+  it('rejects object without required fields', () => {
+    const result = dataUriTool.deserialize({ someField: 'value' });
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error).toContain('Invalid data');
@@ -81,8 +94,31 @@ describe('Notepad deserialize', () => {
   });
 
   it('serializes state to JSON string', () => {
-    const json = notepadTool.serialize({ text: 'Test' });
+    const json = dataUriTool.serialize(defaultState);
     expect(() => JSON.parse(json)).not.toThrow();
-    expect(JSON.parse(json)).toEqual({ text: 'Test' });
+    const parsed = JSON.parse(json);
+    expect(parsed.inputMode).toBe('text');
+    expect(parsed.textInput).toBe('');
+  });
+
+  it('round-trips state through serialize/deserialize', () => {
+    const stateWithData: DataUriState = {
+      ...defaultState,
+      inputMode: 'file',
+      fileName: 'test.png',
+      dataUri: 'data:image/png;base64,abc123',
+      isBase64: true,
+      fileSize: 1024,
+      fileBytes: 'abc123',
+    };
+    const json = dataUriTool.serialize(stateWithData);
+    const parsed = JSON.parse(json);
+    const result = dataUriTool.deserialize(parsed);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.fileName).toBe('test.png');
+      expect(result.data.isBase64).toBe(true);
+      expect(result.data.fileSize).toBe(1024);
+    }
   });
 });
