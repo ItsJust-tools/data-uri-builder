@@ -17,7 +17,7 @@ import { ToolCanvas } from '@/tool/components/tool-canvas';
 import { ToolSidebar } from '@/tool/components/tool-sidebar';
 import { ToolToolbar } from '@/tool/components/tool-toolbar';
 import type { ExporterLoader } from '@itsjust/core';
-import type { DataUriState, InputMode, DataUriType } from '@/tool/types';
+import type { DataUriState } from '@/tool/types';
 
 vi.mock('next/link', () => ({
   default: ({ href, children, ...props }: { href: string; children: ReactNode }) => (

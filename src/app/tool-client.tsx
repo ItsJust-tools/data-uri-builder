@@ -22,7 +22,6 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
   }
 
   let content = '';
-  let contentError = '';
 
   if (state.inputMode === 'text') {
     if (!state.textInput) return { uri: '', error: 'Please enter some text content' };
@@ -99,7 +98,7 @@ export default function ToolClient() {
       mp4: 'video/mp4',
       webm: 'video/webm',
     };
-    return mimeMap[ext] || 'application/octet-stream' as any;
+    return (mimeMap[ext] || 'application/octet-stream') as DataUriType;
   }, []);
 
   const handleInputModeChange = useCallback(
