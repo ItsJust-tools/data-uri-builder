@@ -1,6 +1,9 @@
 # Data URI Builder
 
-[![Tool](https://img.shields.io/badge/Tool-Data%20URI%20Builder-06b6d4?style=for-the-badge)](https://github.com/ItsJust-tools/data-uri-builder)
+![Tool](https://img.shields.io/badge/Tool-Data%20URI%20Builder-06b6d4?style=for-the-badge)
+[![CI](https://github.com/ItsJust-tools/data-uri-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/ItsJust-tools/data-uri-builder/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 Convert any file or text into a data URI — paste, upload, or type to get a `data:` URL. All client-side, privacy-first.
 

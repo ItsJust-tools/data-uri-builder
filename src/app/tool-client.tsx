@@ -31,10 +31,21 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
     content = state.fileBytes;
   } else if (state.inputMode === 'url') {
     if (!state.urlInput) return { uri: '', error: 'Please enter a URL' };
-    return { uri: '', error: 'URL fetching is not available in client-side mode. Please download the file and use file mode.' };
+    return {
+      uri: '',
+      error:
+        'URL fetching is not available in client-side mode. Please download the file and use file mode.',
+    };
   }
 
-  return { uri: buildDataUri(mimeType, content, state.isBase64 && state.inputMode !== 'text' ? false : state.isBase64), error: '' };
+  return {
+    uri: buildDataUri(
+      mimeType,
+      content,
+      state.isBase64 && state.inputMode !== 'text' ? false : state.isBase64,
+    ),
+    error: '',
+  };
 }
 
 export default function ToolClient() {
@@ -45,7 +56,10 @@ export default function ToolClient() {
   const [isSharing, setIsSharing] = useState(false);
   const hasLoadedSharedState = useRef(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(
-    () => typeof window !== 'undefined' && window.innerWidth > 768 && toolConfig.features.sidebar
+    () =>
+      typeof window !== 'undefined' &&
+      window.innerWidth > 768 &&
+      toolConfig.features.sidebar,
   );
 
   const title = toolConfig.name;
@@ -105,14 +119,14 @@ export default function ToolClient() {
     (mode: InputMode) => {
       setToolData((prev) => ({ ...prev, inputMode: mode }));
     },
-    [setToolData]
+    [setToolData],
   );
 
   const handleTextInputChange = useCallback(
     (text: string) => {
       setToolData((prev) => ({ ...prev, textInput: text }));
     },
-    [setToolData]
+    [setToolData],
   );
 
   const handleFileUpload = useCallback(
@@ -130,42 +144,45 @@ export default function ToolClient() {
             fileName: file.name,
             fileSize: file.size,
             fileBytes: base64,
-            selectedMimeType: detectedMime === 'application/octet-stream' ? prev.selectedMimeType : detectedMime,
+            selectedMimeType:
+              detectedMime === 'application/octet-stream'
+                ? prev.selectedMimeType
+                : detectedMime,
             isBase64: true,
           }));
         }
       };
       reader.readAsDataURL(file);
     },
-    [setToolData, mimeTypeForFile]
+    [setToolData, mimeTypeForFile],
   );
 
   const handleUrlInputChange = useCallback(
     (url: string) => {
       setToolData((prev) => ({ ...prev, urlInput: url }));
     },
-    [setToolData]
+    [setToolData],
   );
 
   const handleMimeTypeChange = useCallback(
     (mime: DataUriType) => {
       setToolData((prev) => ({ ...prev, selectedMimeType: mime }));
     },
-    [setToolData]
+    [setToolData],
   );
 
   const handleCustomMimeChange = useCallback(
     (mime: string) => {
       setToolData((prev) => ({ ...prev, customMimeType: mime }));
     },
-    [setToolData]
+    [setToolData],
   );
 
   const handleBase64Toggle = useCallback(
     (isBase64: boolean) => {
       setToolData((prev) => ({ ...prev, isBase64 }));
     },
-    [setToolData]
+    [setToolData],
   );
 
   const handleGenerateUri = useCallback(() => {
@@ -253,11 +270,7 @@ export default function ToolClient() {
   );
 
   const canvasContent = (
-    <ToolCanvas
-      canvasRef={canvasRef}
-      state={tool.state.data}
-      onCopyUri={handleCopyUri}
-    />
+    <ToolCanvas canvasRef={canvasRef} state={tool.state.data} onCopyUri={handleCopyUri} />
   );
 
   const statusBarContent = (
