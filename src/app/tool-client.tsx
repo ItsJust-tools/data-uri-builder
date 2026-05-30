@@ -15,7 +15,7 @@ import {
 import type { InputMode, DataUriType, DataUriState } from '@/tool';
 
 function generateDataUri(state: DataUriState): { uri: string; error: string } {
-  let mimeType = state.selectedMimeType;
+  let mimeType: string = state.selectedMimeType;
   if (mimeType === 'custom') {
     mimeType = state.customMimeType.trim();
     if (!mimeType) return { uri: '', error: 'Please enter a custom MIME type' };
