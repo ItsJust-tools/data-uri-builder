@@ -17,7 +17,9 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 - **Base64 Encoding** — toggle base64 encoding on/off
 - **Copy & Download** — copy the data URI to clipboard or download as a file
 - **Preview** — open the data URI in a new tab to see the result
+- **Keyboard Friendly** — full keyboard navigation for all controls
 - **Dark Mode** — respects your system preference
+- **High Contrast Support** — accessible in high-contrast mode
 - **No Server** — everything runs in your browser, nothing is uploaded
 
 ## How to Use
@@ -28,6 +30,12 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 4. Toggle base64 encoding if needed
 5. Click **Generate Data URI**
 6. Copy, download, or preview the result
+
+## Limitations
+
+- **URL mode** is client-side only and subject to CORS restrictions. Download the file first for reliable results.
+- **Base64** is automatically enabled for file uploads. Toggle it off for text inputs to produce smaller URIs.
+- **Blob size** directly impacts the data URI length. Very large files (several MB) may affect browser performance.
 
 ## Examples
 

@@ -10,9 +10,21 @@ interface ToolCanvasProps {
 }
 
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
-  const handleCopy = useCallback(() => {
+  const handleCopy = useCallback(async () => {
     if (state.dataUri && navigator.clipboard) {
-      navigator.clipboard.writeText(state.dataUri).catch(() => {});
+      try {
+        await navigator.clipboard.writeText(state.dataUri);
+      } catch {
+        // Clipboard write failed silently; use fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = state.dataUri;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
     }
   }, [state.dataUri]);
 
@@ -82,7 +94,7 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
         </div>
       ) : (
         <div className="datauri-empty">
-          <div className="datauri-empty-icon">📦</div>
+          <div className="datauri-empty-icon" aria-hidden="true">📦</div>
           <p className="datauri-empty-text">
             Type text, upload a file, or enter a URL to generate a data URI
           </p>

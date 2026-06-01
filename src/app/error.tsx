@@ -12,7 +12,7 @@ export default function Error({
   return (
     <div className="error-page">
       <div className="error-card">
-        <div className="error-icon">
+        <div className="error-icon" aria-hidden="true">
           <svg
             width="28"
             height="28"

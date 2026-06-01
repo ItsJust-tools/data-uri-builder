@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useState, type DragEvent } from 'react';
 import type { DataUriState, InputMode, DataUriType } from '../types';
 import { DEFAULT_MIME_TYPES } from '../types';
 
@@ -28,6 +29,33 @@ export function ToolSidebar({
   onGenerateUri,
   onClear,
 }: ToolSidebarProps) {
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDragOver(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file && state.inputMode === 'file') {
+        onFileUpload(file);
+      }
+    },
+    [onFileUpload, state.inputMode],
+  );
+
   return (
     <div className="datauri-sidebar">
       {/* Input Mode Selector */}
@@ -74,7 +102,12 @@ export function ToolSidebar({
 
         {state.inputMode === 'file' && (
           <div className="input-group">
-            <div className="file-upload-zone">
+            <div
+              className={`file-upload-zone${isDragOver ? ' drag-over' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input
                 type="file"
                 id="file-upload"
@@ -86,13 +119,18 @@ export function ToolSidebar({
                 aria-label="Choose a file to convert to data URI"
               />
               <label htmlFor="file-upload" className="file-upload-label">
-                <div className="file-upload-icon">📂</div>
+                <div className="file-upload-icon" aria-hidden="true">📂</div>
                 <div className="file-upload-text">
-                  {state.fileName || 'Click to choose a file'}
+                  {state.fileName || (isDragOver ? 'Drop file here' : 'Click or drag to choose a file')}
                 </div>
                 {state.fileSize > 0 && (
                   <div className="file-upload-size">
                     {(state.fileSize / 1024).toFixed(1)} KB
+                  </div>
+                )}
+                {!state.fileName && (
+                  <div className="file-upload-hint">
+                    Drag &amp; drop or click to browse
                   </div>
                 )}
               </label>
