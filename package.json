@@ -1,6 +1,6 @@
 {
   "name": "data-uri-builder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Convert any file or text into a data URI — paste, upload, or type to get a data: URL. All client-side, privacy-first.",
   "license": "MIT",
   "private": true,

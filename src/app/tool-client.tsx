@@ -48,6 +48,16 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
   };
 }
 
+/** Clears any previous error when the user modifies inputs */
+function clearError(
+  setter: React.Dispatch<React.SetStateAction<DataUriState>> | ((prev: DataUriState) => void),
+) {
+  (setter as (update: (prev: DataUriState) => DataUriState) => void)((prev: DataUriState) => {
+    if (prev.error) return { ...prev, error: '' };
+    return prev;
+  });
+}
+
 export default function ToolClient() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const tool = useTool(dataUriTool, canvasRef);
@@ -117,6 +127,7 @@ export default function ToolClient() {
 
   const handleInputModeChange = useCallback(
     (mode: InputMode) => {
+      clearError(setToolData);
       setToolData((prev) => ({ ...prev, inputMode: mode }));
     },
     [setToolData],
@@ -124,6 +135,7 @@ export default function ToolClient() {
 
   const handleTextInputChange = useCallback(
     (text: string) => {
+      clearError(setToolData);
       setToolData((prev) => ({ ...prev, textInput: text }));
     },
     [setToolData],
@@ -131,6 +143,7 @@ export default function ToolClient() {
 
   const handleFileUpload = useCallback(
     (file: File) => {
+      clearError(setToolData);
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result;
@@ -159,6 +172,7 @@ export default function ToolClient() {
 
   const handleUrlInputChange = useCallback(
     (url: string) => {
+      clearError(setToolData);
       setToolData((prev) => ({ ...prev, urlInput: url }));
     },
     [setToolData],
@@ -166,6 +180,7 @@ export default function ToolClient() {
 
   const handleMimeTypeChange = useCallback(
     (mime: DataUriType) => {
+      clearError(setToolData);
       setToolData((prev) => ({ ...prev, selectedMimeType: mime }));
     },
     [setToolData],
@@ -173,6 +188,7 @@ export default function ToolClient() {
 
   const handleCustomMimeChange = useCallback(
     (mime: string) => {
+      clearError(setToolData);
       setToolData((prev) => ({ ...prev, customMimeType: mime }));
     },
     [setToolData],
@@ -180,6 +196,7 @@ export default function ToolClient() {
 
   const handleBase64Toggle = useCallback(
     (isBase64: boolean) => {
+      clearError(setToolData);
       setToolData((prev) => ({ ...prev, isBase64 }));
     },
     [setToolData],
@@ -206,6 +223,39 @@ export default function ToolClient() {
       showToast('Data URI copied to clipboard', 'success');
     }
   }, [tool.state.data.dataUri, showToast]);
+
+  /** Paste text from clipboard as text input */
+  const handlePasteFromClipboard = useCallback(async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setToolData((prev) => ({ ...prev, textInput: text, inputMode: 'text' }));
+        showToast('Pasted from clipboard', 'success');
+      }
+    } catch {
+      showToast('Could not read from clipboard', 'error');
+    }
+  }, [setToolData, showToast]);
+
+  // Keyboard shortcuts: Ctrl+Shift+C (copy), Ctrl+Shift+V (paste), Ctrl+Shift+E (export via config)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
+        if (e.key === 'c' || e.key === 'C') {
+          e.preventDefault();
+          handleCopyUri();
+          return;
+        }
+        if (e.key === 'v' || e.key === 'V') {
+          e.preventDefault();
+          handlePasteFromClipboard();
+          return;
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleCopyUri, handlePasteFromClipboard]);
 
   const handleShare = useCallback(async () => {
     setIsSharing(true);
@@ -242,7 +292,10 @@ export default function ToolClient() {
 
   const toolbarContent = (
     <>
-      <ToolToolbar />
+      <ToolToolbar
+        hasDataUri={!!tool.state.data.dataUri}
+        onCopyUri={handleCopyUri}
+      />
       <ImportExport
         formats={tool.supportedFormats}
         onExport={tool.handleExport}

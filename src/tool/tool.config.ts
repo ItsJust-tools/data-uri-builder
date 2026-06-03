@@ -8,7 +8,7 @@ const toolConfig = {
   name: 'Data URI Builder',
   description:
     'Convert any file or text into a data URI — paste, upload, or type to get a data: URL. All client-side, privacy-first.',
-  version: '1.0.0',
+  version: '1.1.0',
   exportFormats: ['json', 'png', 'jpeg', 'webp', 'pdf'],
   features: {
     export: true,

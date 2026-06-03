@@ -2,7 +2,12 @@
 
 import Link from 'next/link';
 
-export function ToolToolbar() {
+interface ToolToolbarProps {
+  hasDataUri?: boolean;
+  onCopyUri?: () => void;
+}
+
+export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps) {
   return (
     <div className="datauri-toolbar">
       <Link
@@ -12,6 +17,16 @@ export function ToolToolbar() {
       >
         Help
       </Link>
+      {hasDataUri && (
+        <>
+          <span className="datauri-toolbar-hint">
+            <kbd>Ctrl+Shift+C</kbd> Copy
+          </span>
+          <span className="datauri-toolbar-hint">
+            <kbd>Ctrl+Shift+V</kbd> Paste
+          </span>
+        </>
+      )}
     </div>
   );
 }

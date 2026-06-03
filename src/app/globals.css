@@ -542,132 +542,6 @@ body {
   color: var(--accent);
 }
 
-/* --- Notepad Canvas --- */
-
-.notepad-canvas {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  background: var(--card);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.notepad-textarea {
-  flex: 1;
-  width: 100%;
-  min-height: 100%;
-  padding: clamp(1rem, 2.5vw, 2rem);
-  background: transparent;
-  color: var(--foreground);
-  border: none;
-  outline: none;
-  resize: none;
-  font-family: ui-monospace, Menlo, Monaco, 'Cascadia Code', 'Segoe UI Mono', monospace;
-  line-height: 1.6;
-  caret-color: var(--accent);
-}
-
-.notepad-textarea::placeholder {
-  color: var(--muted);
-  opacity: 0.6;
-}
-
-/* --- Notepad Toolbar --- */
-
-.notepad-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-left: 0.5rem;
-  margin-left: 0.25rem;
-  border-left: 1px solid var(--border);
-}
-
-/* --- Notepad Sidebar --- */
-
-.notepad-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.stats-list {
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.stat-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.stat-row dt {
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
-
-.stat-row dd {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-}
-
-.sidebar-font-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.sidebar-font-controls .font-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  height: 1.75rem;
-  padding: 0 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--card);
-  color: var(--foreground);
-  font-family: inherit;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background-color 0.12s,
-    border-color 0.12s,
-    color 0.12s;
-}
-
-.sidebar-font-controls .font-btn:hover {
-  background: var(--accent-subtle);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
-.sidebar-font-controls .font-btn:active {
-  background: var(--accent);
-  color: #fff;
-}
-
-.sidebar-font-controls .font-size-display {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--muted);
-  min-width: 2.5rem;
-  text-align: center;
-  user-select: none;
-}
-
 /* --- Print / Export Styles --- */
 
 @media print {
@@ -702,34 +576,22 @@ body {
     overflow: visible !important;
   }
 
-  .notepad-canvas {
+  .datauri-canvas {
     overflow: visible !important;
     height: auto !important;
     min-height: 0 !important;
     background: #fff !important;
   }
 
-  .notepad-textarea {
-    flex: none !important;
-    min-height: 0 !important;
-    height: auto !important;
-    overflow: visible !important;
+  .datauri-output {
     border: none !important;
     outline: none !important;
-    resize: none !important;
     background: transparent !important;
     color: #000 !important;
-    padding: 1rem !important;
-    font-family:
-      ui-monospace, Menlo, Monaco, 'Cascadia Code', 'Segoe UI Mono', monospace !important;
-    line-height: 1.6 !important;
-    white-space: pre-wrap !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
   }
 
-  .notepad-textarea::placeholder {
-    color: transparent !important;
+  .datauri-actions {
+    display: none !important;
   }
 }
 
@@ -1161,11 +1023,11 @@ body {
   opacity: 0.7;
 }
 
-.file-upload-zone.drag-over .file-upload-label,
-.file-upload-zone .file-upload-label.drag-active {
+.file-upload-zone.drag-over .file-upload-label {
   border-color: var(--accent);
   background: var(--accent-subtle);
   transform: scale(1.02);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .datauri-url-input {
@@ -1255,6 +1117,25 @@ body {
   gap: 0.5rem;
 }
 
+/* --- Data URI keyboard shortcut hints --- */
+
+.datauri-toolbar-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.datauri-toolbar-hint kbd {
+  font-family: ui-monospace, Menlo, Monaco, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-size: 0.6875rem;
+  background: var(--bg-secondary);
+  padding: 0.125rem 0.3125rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  margin: 0 0.125rem;
+}
+
 /* --- Read-only banner --- */
 
 .readonly-banner {
@@ -1273,4 +1154,23 @@ body {
   text-decoration: underline;
   font-weight: 600;
   margin-left: 0.25rem;
+}
+
+/* --- Keyboard shortcut for copy --- */
+
+.datauri-copy-hint {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.datauri-copy-hint kbd {
+  font-family: ui-monospace, Menlo, Monaco, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  font-size: 0.625rem;
+  background: var(--bg-secondary);
+  padding: 0.0625rem 0.25rem;
+  border-radius: 0.1875rem;
+  border: 1px solid var(--border);
 }

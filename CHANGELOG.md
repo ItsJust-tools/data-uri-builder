@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0] — 2026-06-03
+
+### Added
+
+- **Keyboard shortcuts**: `Ctrl+Shift+C` to copy the generated data URI, `Ctrl+Shift+V` to paste text from clipboard into the text input
+- **Toolbar keyboard hints**: When a data URI is generated, the toolbar shows `Ctrl+Shift+C` and `Ctrl+Shift+V` shortcut hints
+- **Error auto-clear**: Previous error messages are now automatically cleared when the user modifies any input (text, file, URL, MIME type, or encoding setting)
+
+### Changed
+
+- **CSS cleanup**: Removed unused Notepad template CSS classes (`.notepad-canvas`, `.notepad-textarea`, `.notepad-toolbar`, `.notepad-sidebar`, `.notepad-preview`, `.sidebar-font-controls`, `.stats-list`, `.stat-row`, etc.) from globals.css, saving CSS bundle size
+- **Drag-and-drop feedback**: Added enhanced visual feedback when dragging files over the upload zone (scale effect + glow)
+- **Print/export styles**: Replaced Notepad-specific print styles with Data URI Builder-specific rules
+
 ## [1.0.0] — 2026-05-24
 
 ### Initial Release
