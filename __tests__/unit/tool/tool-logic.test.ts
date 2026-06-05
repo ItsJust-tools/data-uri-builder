@@ -30,9 +30,29 @@ describe('Data URI Builder logic', () => {
     expect(uri).toBe('data:text/plain,' + encodeURIComponent('Hello World'));
   });
 
-  it('builds data URI for base64 content', () => {
-    const uri = buildDataUri('image/png', 'iVBORw0KGgo=', true);
+  it('builds data URI for base64-encoded text content', () => {
+    const uri = buildDataUri('text/plain', 'Hello World', true);
+    expect(uri).toBe('data:text/plain;base64,' + btoa('Hello World'));
+  });
+
+  it('builds data URI for pre-encoded base64 content (file mode)', () => {
+    const uri = buildDataUri('image/png', 'iVBORw0KGgo=', false);
     expect(uri).toBe('data:image/png;base64,iVBORw0KGgo=');
+  });
+
+  it('builds data URI for non-text content without base64 flag (pre-encoded)', () => {
+    const uri = buildDataUri('application/json', 'eyJrZXkiOiJ2YWwifQ==', false);
+    expect(uri).toBe('data:application/json;base64,eyJrZXkiOiJ2YWwifQ==');
+  });
+
+  it('builds data URI for unicode text with base64 encoding', () => {
+    const uri = buildDataUri('text/plain', 'Hello 世界', true);
+    expect(uri).toBe(
+      'data:text/plain;base64,' +
+        btoa(
+          new TextEncoder().encode('Hello 世界').reduce((s, b) => s + String.fromCharCode(b), '')
+        )
+    );
   });
 
   it('builds data URI for HTML content', () => {

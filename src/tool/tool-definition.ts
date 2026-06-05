@@ -19,9 +19,42 @@ function isDataUriState(value: unknown): value is DataUriState {
   );
 }
 
+/**
+ * Build a data URI from the given MIME type, content, and encoding preference.
+ *
+ * - When `isBase64` is true: the content is base64-encoded, `;base64` is appended.
+ * - When `isBase64` is false and the MIME type starts with `text/`: content is
+ *   URL-encoded, no charset suffix.
+ * - When `isBase64` is false and the MIME type is non-text: content is assumed
+ *   to be pre-encoded base64 (e.g. from a file upload), `;base64` is appended,
+ *   and the content is passed through as-is (no double-encoding).
+ */
 function buildDataUri(mimeType: string, content: string, isBase64: boolean): string {
-  const charset = mimeType.startsWith('text/') && !isBase64 ? '' : ';base64';
-  return `data:${mimeType}${charset},${isBase64 ? content : encodeURIComponent(content)}`;
+  if (isBase64) {
+    // Encode raw content to base64
+    let base64: string;
+    try {
+      base64 = btoa(content);
+    } catch {
+      // Content may contain non-Latin1 characters; use TextEncoder fallback
+      const bytes = new TextEncoder().encode(content);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        const byte = bytes[i];
+        if (byte !== undefined) binary += String.fromCharCode(byte);
+      }
+      base64 = btoa(binary);
+    }
+    return `data:${mimeType};base64,${base64}`;
+  }
+
+  if (mimeType.startsWith('text/')) {
+    // URL-encode text content, no charset suffix
+    return `data:${mimeType},${encodeURIComponent(content)}`;
+  }
+
+  // Non-text content without base64 flag: assume pre-encoded base64
+  return `data:${mimeType};base64,${content}`;
 }
 
 export const dataUriTool: Tool<DataUriState> = {

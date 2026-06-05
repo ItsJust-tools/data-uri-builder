@@ -42,7 +42,9 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
     uri: buildDataUri(
       mimeType,
       content,
-      state.isBase64 && state.inputMode !== 'text' ? false : state.isBase64
+      // For file mode, content is already base64-encoded from FileReader.readAsDataURL
+      // so we pass isBase64=false to avoid double-encoding
+      state.inputMode === 'file' ? false : state.isBase64
     ),
     error: '',
   };
