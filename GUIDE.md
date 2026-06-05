@@ -21,17 +21,21 @@ data:[<mime-type>][;base64],<data>
 ## Input Modes
 
 ### Text Mode
+
 Type or paste any text content. Best for HTML, CSS, JavaScript, JSON, XML, SVG, and plain text.
 
 ### File Mode
+
 Upload any file. Works with images (PNG, JPEG, WebP, GIF, SVG), documents (PDF), fonts (WOFF2, WOFF), audio (MP3, OGG), and video (MP4, WebM). MIME type is auto-detected from the file extension.
 
 ### URL Mode
+
 Enter a URL to fetch content from. Note: Most servers block cross-origin requests (CORS), so you may need to download the file first and use File mode instead.
 
 ## MIME Types
 
 The tool provides 20+ common MIME types:
+
 - Text: text/plain, text/html, text/css, text/javascript
 - Data: application/json, application/xml
 - Images: image/png, image/jpeg, image/webp, image/gif, image/svg+xml

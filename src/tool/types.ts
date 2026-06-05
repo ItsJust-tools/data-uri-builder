@@ -1,6 +1,27 @@
 export type InputMode = 'text' | 'file' | 'url';
 
-export type DataUriType = 'text/plain' | 'text/html' | 'text/css' | 'text/javascript' | 'application/json' | 'application/xml' | 'image/svg+xml' | 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif' | 'image/svg+xml;utf8' | 'application/pdf' | 'font/woff2' | 'font/woff' | 'audio/mpeg' | 'audio/ogg' | 'video/mp4' | 'video/webm' | 'application/octet-stream' | 'custom';
+export type DataUriType =
+  | 'text/plain'
+  | 'text/html'
+  | 'text/css'
+  | 'text/javascript'
+  | 'application/json'
+  | 'application/xml'
+  | 'image/svg+xml'
+  | 'image/png'
+  | 'image/jpeg'
+  | 'image/webp'
+  | 'image/gif'
+  | 'image/svg+xml;utf8'
+  | 'application/pdf'
+  | 'font/woff2'
+  | 'font/woff'
+  | 'audio/mpeg'
+  | 'audio/ogg'
+  | 'video/mp4'
+  | 'video/webm'
+  | 'application/octet-stream'
+  | 'custom';
 
 export interface DataUriState {
   inputMode: InputMode;

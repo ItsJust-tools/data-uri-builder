@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Copy URI button in toolbar**: Added an actionable "Copy URI" button next to shortcut hints when a data URI has been generated, making the copy function accessible via click as well as keyboard
+
+### Changed
+
+- **package.json metadata**: Added missing `homepage`, `bugs`, and `keywords` fields for better npm ecosystem discoverability
+
 ## [1.1.0] — 2026-06-03
 
 ### Added
@@ -10,8 +20,8 @@
 
 ### Changed
 
-- **CSS cleanup**: Removed unused Notepad template CSS classes (`.notepad-canvas`, `.notepad-textarea`, `.notepad-toolbar`, `.notepad-sidebar`, `.notepad-preview`, `.sidebar-font-controls`, `.stats-list`, `.stat-row`, etc.) from globals.css, saving CSS bundle size
-- **Drag-and-drop feedback**: Added enhanced visual feedback when dragging files over the upload zone (scale effect + glow)
+- **CSS cleanup**: Removed unused Notepad template CSS classes from globals.css, saving CSS bundle size
+- **Drag-and-drop feedback**: Added enhanced visual feedback when dragging files over the upload zone
 - **Print/export styles**: Replaced Notepad-specific print styles with Data URI Builder-specific rules
 
 ## [1.0.0] — 2026-05-24

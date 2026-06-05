@@ -42,7 +42,7 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
     uri: buildDataUri(
       mimeType,
       content,
-      state.isBase64 && state.inputMode !== 'text' ? false : state.isBase64,
+      state.isBase64 && state.inputMode !== 'text' ? false : state.isBase64
     ),
     error: '',
   };
@@ -50,7 +50,7 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
 
 /** Clears any previous error when the user modifies inputs */
 function clearError(
-  setter: React.Dispatch<React.SetStateAction<DataUriState>> | ((prev: DataUriState) => void),
+  setter: React.Dispatch<React.SetStateAction<DataUriState>> | ((prev: DataUriState) => void)
 ) {
   (setter as (update: (prev: DataUriState) => DataUriState) => void)((prev: DataUriState) => {
     if (prev.error) return { ...prev, error: '' };
@@ -66,10 +66,7 @@ export default function ToolClient() {
   const [isSharing, setIsSharing] = useState(false);
   const hasLoadedSharedState = useRef(false);
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(
-    () =>
-      typeof window !== 'undefined' &&
-      window.innerWidth > 768 &&
-      toolConfig.features.sidebar,
+    () => typeof window !== 'undefined' && window.innerWidth > 768 && toolConfig.features.sidebar
   );
 
   const title = toolConfig.name;
@@ -130,7 +127,7 @@ export default function ToolClient() {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, inputMode: mode }));
     },
-    [setToolData],
+    [setToolData]
   );
 
   const handleTextInputChange = useCallback(
@@ -138,7 +135,7 @@ export default function ToolClient() {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, textInput: text }));
     },
-    [setToolData],
+    [setToolData]
   );
 
   const handleFileUpload = useCallback(
@@ -158,16 +155,14 @@ export default function ToolClient() {
             fileSize: file.size,
             fileBytes: base64,
             selectedMimeType:
-              detectedMime === 'application/octet-stream'
-                ? prev.selectedMimeType
-                : detectedMime,
+              detectedMime === 'application/octet-stream' ? prev.selectedMimeType : detectedMime,
             isBase64: true,
           }));
         }
       };
       reader.readAsDataURL(file);
     },
-    [setToolData, mimeTypeForFile],
+    [setToolData, mimeTypeForFile]
   );
 
   const handleUrlInputChange = useCallback(
@@ -175,7 +170,7 @@ export default function ToolClient() {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, urlInput: url }));
     },
-    [setToolData],
+    [setToolData]
   );
 
   const handleMimeTypeChange = useCallback(
@@ -183,7 +178,7 @@ export default function ToolClient() {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, selectedMimeType: mime }));
     },
-    [setToolData],
+    [setToolData]
   );
 
   const handleCustomMimeChange = useCallback(
@@ -191,7 +186,7 @@ export default function ToolClient() {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, customMimeType: mime }));
     },
-    [setToolData],
+    [setToolData]
   );
 
   const handleBase64Toggle = useCallback(
@@ -199,7 +194,7 @@ export default function ToolClient() {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, isBase64 }));
     },
-    [setToolData],
+    [setToolData]
   );
 
   const handleGenerateUri = useCallback(() => {
@@ -292,10 +287,7 @@ export default function ToolClient() {
 
   const toolbarContent = (
     <>
-      <ToolToolbar
-        hasDataUri={!!tool.state.data.dataUri}
-        onCopyUri={handleCopyUri}
-      />
+      <ToolToolbar hasDataUri={!!tool.state.data.dataUri} onCopyUri={handleCopyUri} />
       <ImportExport
         formats={tool.supportedFormats}
         onExport={tool.handleExport}

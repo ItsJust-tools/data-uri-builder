@@ -8,6 +8,18 @@
     "type": "git",
     "url": "git+https://github.com/ItsJust-tools/data-uri-builder.git"
   },
+  "homepage": "https://data-uri-builder.itsjust.tools",
+  "bugs": {
+    "url": "https://github.com/ItsJust-tools/data-uri-builder/issues"
+  },
+  "keywords": [
+    "data-uri",
+    "base64",
+    "url-encoder",
+    "data-url",
+    "privacy-first",
+    "itsjust"
+  ],
   "workspaces": [
     "packages/*"
   ],

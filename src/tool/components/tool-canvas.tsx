@@ -31,21 +31,27 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
   const dataUriLength = state.dataUri.length;
   const overheadBytes = state.dataUri.length;
   const originalSize = state.fileSize || state.textInput.length;
-  const overheadRatio = originalSize > 0 ? ((overheadBytes / originalSize) * 100 - 100).toFixed(1) : '0';
+  const overheadRatio =
+    originalSize > 0 ? ((overheadBytes / originalSize) * 100 - 100).toFixed(1) : '0';
 
   return (
-    <div ref={canvasRef} className="datauri-canvas" role="application" aria-label="Data URI Builder">
+    <div
+      ref={canvasRef}
+      className="datauri-canvas"
+      role="application"
+      aria-label="Data URI Builder"
+    >
       {/* Result area */}
       {state.dataUri ? (
         <div className="datauri-result">
           <div className="datauri-header">
             <h2 className="datauri-title">Generated Data URI</h2>
             <div className="datauri-stats">
-              <span className="stat-badge stat-badge-size">{dataUriLength.toLocaleString()} chars</span>
+              <span className="stat-badge stat-badge-size">
+                {dataUriLength.toLocaleString()} chars
+              </span>
               {originalSize > 0 && (
-                <span className="stat-badge stat-badge-overhead">
-                  +{overheadRatio}% overhead
-                </span>
+                <span className="stat-badge stat-badge-overhead">+{overheadRatio}% overhead</span>
               )}
             </div>
           </div>
@@ -94,7 +100,9 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
         </div>
       ) : (
         <div className="datauri-empty">
-          <div className="datauri-empty-icon" aria-hidden="true">📦</div>
+          <div className="datauri-empty-icon" aria-hidden="true">
+            📦
+          </div>
           <p className="datauri-empty-text">
             Type text, upload a file, or enter a URL to generate a data URI
           </p>

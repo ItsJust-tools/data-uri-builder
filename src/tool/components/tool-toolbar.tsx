@@ -10,15 +10,18 @@ interface ToolToolbarProps {
 export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps) {
   return (
     <div className="datauri-toolbar">
-      <Link
-        href="/help"
-        className="toolbar-btn toolbar-help-link"
-        aria-label="Open help page"
-      >
+      <Link href="/help" className="toolbar-btn toolbar-help-link" aria-label="Open help page">
         Help
       </Link>
       {hasDataUri && (
         <>
+          <button
+            className="toolbar-btn toolbar-copy-btn"
+            onClick={onCopyUri}
+            aria-label="Copy data URI to clipboard"
+          >
+            Copy URI
+          </button>
           <span className="datauri-toolbar-hint">
             <kbd>Ctrl+Shift+C</kbd> Copy
           </span>

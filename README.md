@@ -39,10 +39,10 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 
 ## Examples
 
-| Input | MIME Type | Output |
-|-------|-----------|--------|
-| `<h1>Hello</h1>` | text/html | `data:text/html,%3Ch1%3EHello%3C/h1%3E` |
-| image.png | image/png | `data:image/png;base64,iVBORw0KGgo...` |
+| Input             | MIME Type        | Output                                                |
+| ----------------- | ---------------- | ----------------------------------------------------- |
+| `<h1>Hello</h1>`  | text/html        | `data:text/html,%3Ch1%3EHello%3C/h1%3E`               |
+| image.png         | image/png        | `data:image/png;base64,iVBORw0KGgo...`                |
 | `{"key":"value"}` | application/json | `data:application/json,%7B%22key%22%3A%22value%22%7D` |
 
 ## Development

@@ -53,7 +53,7 @@ export function ToolSidebar({
         onFileUpload(file);
       }
     },
-    [onFileUpload, state.inputMode],
+    [onFileUpload, state.inputMode]
   );
 
   return (
@@ -74,8 +74,7 @@ export function ToolSidebar({
             >
               {mode === 'text' && '📝'}
               {mode === 'file' && '📁'}
-              {mode === 'url' && '🔗'}
-              {' '}{mode.charAt(0).toUpperCase() + mode.slice(1)}
+              {mode === 'url' && '🔗'} {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
           ))}
         </div>
@@ -119,19 +118,18 @@ export function ToolSidebar({
                 aria-label="Choose a file to convert to data URI"
               />
               <label htmlFor="file-upload" className="file-upload-label">
-                <div className="file-upload-icon" aria-hidden="true">📂</div>
+                <div className="file-upload-icon" aria-hidden="true">
+                  📂
+                </div>
                 <div className="file-upload-text">
-                  {state.fileName || (isDragOver ? 'Drop file here' : 'Click or drag to choose a file')}
+                  {state.fileName ||
+                    (isDragOver ? 'Drop file here' : 'Click or drag to choose a file')}
                 </div>
                 {state.fileSize > 0 && (
-                  <div className="file-upload-size">
-                    {(state.fileSize / 1024).toFixed(1)} KB
-                  </div>
+                  <div className="file-upload-size">{(state.fileSize / 1024).toFixed(1)} KB</div>
                 )}
                 {!state.fileName && (
-                  <div className="file-upload-hint">
-                    Drag &amp; drop or click to browse
-                  </div>
+                  <div className="file-upload-hint">Drag &amp; drop or click to browse</div>
                 )}
               </label>
             </div>

@@ -30,8 +30,16 @@ const toolConfig = {
       title: 'Data URI Builder',
       shortcuts: [
         { keys: 'Ctrl+Shift+E', label: 'Export All', description: 'exports all formats at once' },
-        { keys: 'Ctrl+Shift+V', label: 'Paste from Clipboard', description: 'paste text or image from clipboard' },
-        { keys: 'Ctrl+Shift+C', label: 'Copy Data URI', description: 'copy generated data URI to clipboard' },
+        {
+          keys: 'Ctrl+Shift+V',
+          label: 'Paste from Clipboard',
+          description: 'paste text or image from clipboard',
+        },
+        {
+          keys: 'Ctrl+Shift+C',
+          label: 'Copy Data URI',
+          description: 'copy generated data URI to clipboard',
+        },
       ],
     },
   ],
