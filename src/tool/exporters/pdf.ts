@@ -1,6 +1,10 @@
 import type { Exporter } from '@itsjust/core';
 import { formatExportError, throwIfAborted } from './utils';
 
+/**
+ * Collect all accessible CSS rules from the document to preserve styling
+ * in the print-friendly iframe. Cross-origin stylesheets are silently skipped.
+ */
 function collectStyles(): string {
   const chunks: string[] = [];
   for (let i = 0; i < document.styleSheets.length; i++) {
@@ -20,13 +24,22 @@ function collectStyles(): string {
   return chunks.join('\n');
 }
 
+/**
+ * Create a deep clone of the element with textarea content inlined
+ * as plain <div> elements so the browser print dialog captures them.
+ *
+ * Browsers often omit <textarea> values when printing or rendering
+ * cloned nodes. This function replaces each textarea with a styled
+ * <div> preserving the content, font, and layout.
+ */
 function createPrintClone(element: HTMLElement): string {
   const clone = element.cloneNode(true) as HTMLElement;
 
-  const textarea = clone.querySelector('textarea');
-  if (textarea instanceof HTMLTextAreaElement && textarea.parentNode) {
+  const textareas = clone.querySelectorAll('textarea');
+  for (const textarea of textareas) {
+    if (!textarea.parentNode) continue;
     const replacement = document.createElement('div');
-    replacement.className = 'notepad-textarea-replacement';
+    replacement.className = 'print-textarea-replacement';
     replacement.textContent = textarea.value;
 
     const computed = window.getComputedStyle(textarea);

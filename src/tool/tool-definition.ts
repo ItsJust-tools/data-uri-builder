@@ -2,6 +2,15 @@ import type { Tool } from '@itsjust/core';
 import toolConfig from './tool.config';
 import type { DataUriState } from './types';
 
+/**
+ * Checks whether an unknown value is a valid DataUriState object.
+ * Validates that all required fields are present with correct types,
+ * and that enum-like fields (inputMode, selectedMimeType) are strings
+ * (runtime validation, not strict to the union to allow future additions).
+ *
+ * @param value - Unknown value to validate
+ * @returns True if the value is a valid DataUriState
+ */
 function isDataUriState(value: unknown): value is DataUriState {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
@@ -14,21 +23,29 @@ function isDataUriState(value: unknown): value is DataUriState {
     typeof v.dataUri === 'string' &&
     typeof v.isBase64 === 'boolean' &&
     typeof v.fileSize === 'number' &&
-    typeof v.urlInput === 'string' &&
+    !Number.isNaN(v.fileSize as number) &&
     typeof v.fileBytes === 'string' &&
+    typeof v.urlInput === 'string' &&
     typeof v.error === 'string'
   );
 }
 
 /**
- * Build a data URI from the given MIME type, content, and encoding preference.
+ * Build a data URI string from the given MIME type, content, and encoding preference.
  *
- * - When `isBase64` is true: the content is base64-encoded, `;base64` is appended.
+ * Behavior by encoding mode:
+ * - When `isBase64` is true: the content is base64-encoded, `;base64` is appended
+ *   to the MIME type. Supports non-Latin1 characters via TextEncoder fallback.
  * - When `isBase64` is false and the MIME type starts with `text/`: content is
  *   URL-encoded, no charset suffix.
  * - When `isBase64` is false and the MIME type is non-text: content is assumed
  *   to be pre-encoded base64 (e.g. from a file upload), `;base64` is appended,
  *   and the content is passed through as-is (no double-encoding).
+ *
+ * @param mimeType - MIME type string (e.g. "text/plain", "image/png")
+ * @param content - Raw content string to encode
+ * @param isBase64 - Whether to base64-encode the content
+ * @returns A complete data URI string
  */
 function buildDataUri(mimeType: string, content: string, isBase64: boolean): string {
   if (isBase64) {

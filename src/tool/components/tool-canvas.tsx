@@ -13,19 +13,12 @@ interface ToolCanvasProps {
 }
 
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
-  /**
-   * Fallback copy handler used when onCopyUri prop is not provided.
-   * Uses the modern Clipboard API to write the data URI text.
-   * Note: onCopyUri is always passed from ToolClient, so this only
-   * fires if the component is used standalone without a parent handler.
-   */
   const handleCopy = useCallback(async () => {
     if (state.dataUri && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(state.dataUri);
       } catch {
-        // Clipboard API rejected; silently fail as the parent onCopyUri
-        // will show a toast notification when connected via ToolClient.
+        // Clipboard API rejected; silently ignore
       }
     }
   }, [state.dataUri]);

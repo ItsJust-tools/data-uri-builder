@@ -61,6 +61,44 @@ describe('Data URI Builder logic', () => {
     expect(uri).toContain(encodeURIComponent('<h1>Title</h1>'));
   });
 
+  it('builds data URI for empty content', () => {
+    const uri = buildDataUri('text/plain', '', false);
+    expect(uri).toBe('data:text/plain,');
+  });
+
+  it('builds data URI for empty content with base64', () => {
+    const uri = buildDataUri('text/plain', '', true);
+    expect(uri).toBe('data:text/plain;base64,');
+  });
+
+  it('handles non-Latin1 characters without base64 (non-text mime)', () => {
+    // Non-text mime with non-base64 content should pass as-is
+    const uri = buildDataUri('application/octet-stream', '\x00\xFF\xFE', false);
+    expect(uri).toBe('data:application/octet-stream;base64,\x00\xFF\xFE');
+  });
+
+  it('builds data URI for content with special URL characters', () => {
+    const uri = buildDataUri('text/plain', 'hello & world = 100%', false);
+    expect(uri).toBe('data:text/plain,' + encodeURIComponent('hello & world = 100%'));
+    expect(uri).toContain('%20');
+    expect(uri).toContain('%3D');
+  });
+
+  it('builds data URI for CSS content', () => {
+    const css = 'body { background: #fff; color: #000; }';
+    const uri = buildDataUri('text/css', css, false);
+    expect(uri).toContain('data:text/css,');
+    expect(uri).toContain(encodeURIComponent(css));
+  });
+
+  it('builds data URI for SVG content (non-text mime — passed as-is)', () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>';
+    const uri = buildDataUri('image/svg+xml', svg, false);
+    // Non-text mimes are treated as pre-encoded base64 (passthrough)
+    expect(uri).toContain('data:image/svg+xml;base64,');
+    expect(uri).toContain(svg);
+  });
+
   it('supports undo/redo', () => {
     const state = createMockToolState<DataUriState>({
       ...defaultState,
@@ -164,5 +202,41 @@ describe('Data URI Builder deserialize', () => {
     if (result.success) {
       expect(result.data.error).toBe('Something went wrong');
     }
+  });
+
+  it('rejects state with NaN fileSize', () => {
+    const invalidState = {
+      ...defaultState,
+      fileSize: NaN,
+    };
+    const result = dataUriTool.deserialize(invalidState);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects state with non-boolean isBase64', () => {
+    const invalidState = {
+      ...defaultState,
+      isBase64: 'true',
+    };
+    const result = dataUriTool.deserialize(invalidState);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain('Invalid data');
+    }
+  });
+
+  it('rejects state with missing textInput field', () => {
+    const { textInput: _, ...partial } = defaultState;
+    const result = dataUriTool.deserialize(partial);
+    expect(result.success).toBe(false);
+  });
+
+  it('rejects state where inputMode is non-string (number)', () => {
+    const invalidState = {
+      ...defaultState,
+      inputMode: 42,
+    };
+    const result = dataUriTool.deserialize(invalidState);
+    expect(result.success).toBe(false);
   });
 });
