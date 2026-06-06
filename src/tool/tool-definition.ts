@@ -15,7 +15,8 @@ function isDataUriState(value: unknown): value is DataUriState {
     typeof v.isBase64 === 'boolean' &&
     typeof v.fileSize === 'number' &&
     typeof v.urlInput === 'string' &&
-    typeof v.fileBytes === 'string'
+    typeof v.fileBytes === 'string' &&
+    typeof v.error === 'string'
   );
 }
 

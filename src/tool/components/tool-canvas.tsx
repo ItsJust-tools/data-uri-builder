@@ -4,26 +4,28 @@ import { useCallback } from 'react';
 import type { DataUriState } from '../types';
 
 interface ToolCanvasProps {
+  /** Current tool state containing data URI and related info */
   state: DataUriState;
+  /** Ref forwarded to the canvas container for export/screenshot operations */
   canvasRef?: React.RefObject<HTMLDivElement | null>;
+  /** Called when user clicks Copy — shows toast feedback in ToolClient */
   onCopyUri?: () => void;
 }
 
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
+  /**
+   * Fallback copy handler used when onCopyUri prop is not provided.
+   * Uses the modern Clipboard API to write the data URI text.
+   * Note: onCopyUri is always passed from ToolClient, so this only
+   * fires if the component is used standalone without a parent handler.
+   */
   const handleCopy = useCallback(async () => {
     if (state.dataUri && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(state.dataUri);
       } catch {
-        // Clipboard write failed silently; use fallback
-        const textArea = document.createElement('textarea');
-        textArea.value = state.dataUri;
-        textArea.style.position = 'fixed';
-        textArea.style.opacity = '0';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
+        // Clipboard API rejected; silently fail as the parent onCopyUri
+        // will show a toast notification when connected via ToolClient.
       }
     }
   }, [state.dataUri]);

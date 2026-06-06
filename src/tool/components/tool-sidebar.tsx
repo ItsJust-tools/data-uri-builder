@@ -1,19 +1,29 @@
 'use client';
 
-import { useCallback, useState, type DragEvent } from 'react';
+import { useCallback, useState, useId, type DragEvent } from 'react';
 import type { DataUriState, InputMode, DataUriType } from '../types';
 import { DEFAULT_MIME_TYPES } from '../types';
 
 interface ToolSidebarProps {
+  /** Current tool state */
   state: DataUriState;
+  /** Switch between text/file/URL input modes */
   onInputModeChange: (mode: InputMode) => void;
+  /** Update text content for text mode */
   onTextInputChange: (text: string) => void;
+  /** Handle file selection/upload for file mode */
   onFileUpload: (file: File) => void;
+  /** Update URL input value */
   onUrlInputChange: (url: string) => void;
+  /** Change the selected MIME type */
   onMimeTypeChange: (mime: DataUriType) => void;
+  /** Update custom MIME type text */
   onCustomMimeChange: (mime: string) => void;
+  /** Toggle base64 encoding */
   onBase64Toggle: (isBase64: boolean) => void;
+  /** Generate the data URI from current inputs */
   onGenerateUri: () => void;
+  /** Reset everything to initial state */
   onClear: () => void;
 }
 
@@ -56,8 +66,14 @@ export function ToolSidebar({
     [onFileUpload, state.inputMode]
   );
 
+  // Unique IDs for accessibility
+  const textareaId = useId();
+  const fileInputId = useId();
+  const mimeSelectId = useId();
+  const customMimeInputId = useId();
+
   return (
-    <div className="datauri-sidebar">
+    <div className="datauri-sidebar" role="form" aria-label="Data URI options">
       {/* Input Mode Selector */}
       <div className="sidebar-section">
         <h3>Input Source</h3>
@@ -85,11 +101,15 @@ export function ToolSidebar({
         <h3>Content</h3>
         {state.inputMode === 'text' && (
           <div className="input-group">
+            <label htmlFor={textareaId} className="sidebar-section-label">
+              Text Input
+            </label>
             <textarea
+              id={textareaId}
               value={state.textInput}
               onChange={(e) => onTextInputChange(e.target.value)}
               className="datauri-textarea"
-              aria-label="Text input"
+              aria-label="Text content to convert to data URI"
               placeholder="Paste or type text content here..."
               rows={8}
             />
@@ -106,10 +126,13 @@ export function ToolSidebar({
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
+              role="button"
+              tabIndex={0}
+              aria-label={state.fileName ? `Selected file: ${state.fileName}` : 'Click or drag a file to upload'}
             >
               <input
                 type="file"
-                id="file-upload"
+                id={fileInputId}
                 className="file-input-hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -117,7 +140,7 @@ export function ToolSidebar({
                 }}
                 aria-label="Choose a file to convert to data URI"
               />
-              <label htmlFor="file-upload" className="file-upload-label">
+              <label htmlFor={fileInputId} className="file-upload-label">
                 <div className="file-upload-icon" aria-hidden="true">
                   📂
                 </div>
@@ -158,6 +181,7 @@ export function ToolSidebar({
         <h3>MIME Type</h3>
         <div className="sidebar-column">
           <select
+            id={mimeSelectId}
             value={state.selectedMimeType}
             onChange={(e) => onMimeTypeChange(e.target.value as DataUriType)}
             className="datauri-select"
@@ -171,6 +195,7 @@ export function ToolSidebar({
           </select>
           {state.selectedMimeType === 'custom' && (
             <input
+              id={customMimeInputId}
               type="text"
               value={state.customMimeType}
               onChange={(e) => onCustomMimeChange(e.target.value)}
@@ -229,9 +254,9 @@ export function ToolSidebar({
       </div>
 
       {state.error && (
-        <div className="sidebar-section">
-          <div className="error-message" role="alert">
-            {state.error}
+        <div className="sidebar-section" role="alert" aria-live="assertive">
+          <div className="error-message">
+            <span aria-hidden="true">⚠️</span> {state.error}
           </div>
         </div>
       )}

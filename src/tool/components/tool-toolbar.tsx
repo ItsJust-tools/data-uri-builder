@@ -3,7 +3,9 @@
 import Link from 'next/link';
 
 interface ToolToolbarProps {
+  /** Whether a data URI has been generated (shows Copy URI button) */
   hasDataUri?: boolean;
+  /** Called when the Copy URI button is clicked */
   onCopyUri?: () => void;
 }
 

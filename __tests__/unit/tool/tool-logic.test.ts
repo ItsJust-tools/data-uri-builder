@@ -141,4 +141,28 @@ describe('Data URI Builder deserialize', () => {
       expect(result.data.fileSize).toBe(1024);
     }
   });
+
+  it('rejects object with non-string error field', () => {
+    const invalidState = {
+      ...defaultState,
+      error: 42, // should be a string
+    };
+    const result = dataUriTool.deserialize(invalidState);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain('Invalid data');
+    }
+  });
+
+  it('accepts state with an error string present', () => {
+    const errorState: DataUriState = {
+      ...defaultState,
+      error: 'Something went wrong',
+    };
+    const result = dataUriTool.deserialize(errorState);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.error).toBe('Something went wrong');
+    }
+  });
 });

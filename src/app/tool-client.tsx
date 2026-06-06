@@ -14,6 +14,17 @@ import {
 } from '@/tool';
 import type { InputMode, DataUriType, DataUriState } from '@/tool';
 
+/**
+ * Generates a data URI string from the current tool state.
+ * Validates inputs based on the current mode (text/file/url)
+ * and returns either a valid URI or an error message.
+ *
+ * In file mode, content is already base64-encoded from FileReader,
+ * so isBase64 is passed as false to avoid double-encoding.
+ *
+ * @param state - Current DataUriState with input content and options
+ * @returns Object with either a uri string or an error message
+ */
 function generateDataUri(state: DataUriState): { uri: string; error: string } {
   let mimeType: string = state.selectedMimeType;
   if (mimeType === 'custom') {
@@ -50,7 +61,12 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
   };
 }
 
-/** Clears any previous error when the user modifies inputs */
+/**
+ * Clears any previous error when the user modifies inputs.
+ * Uses a functional update to avoid unnecessary re-renders when there's no error.
+ *
+ * @param setter - Tool state setter function from useTool
+ */
 function clearError(
   setter: React.Dispatch<React.SetStateAction<DataUriState>> | ((prev: DataUriState) => void)
 ) {
