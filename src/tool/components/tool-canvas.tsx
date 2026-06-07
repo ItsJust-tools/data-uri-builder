@@ -17,11 +17,12 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
     if (state.dataUri && navigator.clipboard) {
       try {
         await navigator.clipboard.writeText(state.dataUri);
+        onCopyUri?.();
       } catch {
         // Clipboard API rejected; silently ignore
       }
     }
-  }, [state.dataUri]);
+  }, [state.dataUri, onCopyUri]);
 
   const dataUriLength = state.dataUri.length;
   const overheadBytes = state.dataUri.length;

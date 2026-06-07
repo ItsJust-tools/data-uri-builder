@@ -16,22 +16,20 @@ export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps)
         Help
       </Link>
       {hasDataUri && (
-        <>
-          <button
-            className="toolbar-btn toolbar-copy-btn"
-            onClick={onCopyUri}
-            aria-label="Copy data URI to clipboard"
-          >
-            Copy URI
-          </button>
-          <span className="datauri-toolbar-hint">
-            <kbd>Ctrl+Shift+C</kbd> Copy
-          </span>
-          <span className="datauri-toolbar-hint">
-            <kbd>Ctrl+Shift+V</kbd> Paste
-          </span>
-        </>
+        <button
+          className="toolbar-btn toolbar-copy-btn"
+          onClick={onCopyUri}
+          aria-label="Copy data URI to clipboard"
+        >
+          Copy URI
+        </button>
       )}
+      <span className="datauri-toolbar-hint">
+        <kbd>Ctrl+Shift+C</kbd> Copy
+      </span>
+      <span className="datauri-toolbar-hint">
+        <kbd>Ctrl+Shift+V</kbd> Paste
+      </span>
     </div>
   );
 }

@@ -59,11 +59,15 @@ export function ToolSidebar({
       e.stopPropagation();
       setIsDragOver(false);
       const file = e.dataTransfer.files?.[0];
-      if (file && state.inputMode === 'file') {
+      if (file) {
+        // Auto-switch to file mode when a file is dropped, regardless of current mode
+        if (state.inputMode !== 'file') {
+          onInputModeChange('file');
+        }
         onFileUpload(file);
       }
     },
-    [onFileUpload, state.inputMode]
+    [onFileUpload, onInputModeChange, state.inputMode]
   );
 
   // Unique IDs for accessibility

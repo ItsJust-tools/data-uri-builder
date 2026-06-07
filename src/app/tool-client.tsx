@@ -114,7 +114,13 @@ export default function ToolClient() {
     }
   }, [setToolData, showToast]);
 
-  // Set default MIME type based on uploaded file extension
+  /**
+   * Maps a file extension to its corresponding MIME type.
+   * Falls back to 'application/octet-stream' for unknown extensions.
+   *
+   * @param fileName - The name of the uploaded file
+   * @returns The detected DataUriType
+   */
   const mimeTypeForFile = useCallback((fileName: string): DataUriType => {
     const ext = fileName.split('.').pop()?.toLowerCase() || '';
     const mimeMap: Record<string, DataUriType> = {
@@ -140,6 +146,10 @@ export default function ToolClient() {
     return (mimeMap[ext] || 'application/octet-stream') as DataUriType;
   }, []);
 
+  /**
+   * Handles switching the input mode (text/file/url).
+   * Clears any existing error before updating state.
+   */
   const handleInputModeChange = useCallback(
     (mode: InputMode) => {
       clearError(setToolData);
@@ -148,6 +158,10 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  /**
+   * Handles text input changes from the sidebar textarea.
+   * Clears any existing error before updating state.
+   */
   const handleTextInputChange = useCallback(
     (text: string) => {
       clearError(setToolData);
@@ -156,6 +170,11 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  /**
+   * Handles file upload from the sidebar file picker or drag-and-drop.
+   * Reads the file as a data URL, extracts the base64 content, and auto-detects
+   * the MIME type from the file extension.
+   */
   const handleFileUpload = useCallback(
     (file: File) => {
       clearError(setToolData);
@@ -183,6 +202,10 @@ export default function ToolClient() {
     [setToolData, mimeTypeForFile]
   );
 
+  /**
+   * Handles URL input changes from the sidebar URL field.
+   * Clears any existing error before updating state.
+   */
   const handleUrlInputChange = useCallback(
     (url: string) => {
       clearError(setToolData);
@@ -191,6 +214,10 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  /**
+   * Handles MIME type selection changes.
+   * Clears any existing error before updating state.
+   */
   const handleMimeTypeChange = useCallback(
     (mime: DataUriType) => {
       clearError(setToolData);
@@ -199,6 +226,10 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  /**
+   * Handles custom MIME type text input changes.
+   * Clears any existing error before updating state.
+   */
   const handleCustomMimeChange = useCallback(
     (mime: string) => {
       clearError(setToolData);
@@ -207,6 +238,10 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  /**
+   * Handles base64 encoding toggle.
+   * Clears any existing error before updating state.
+   */
   const handleBase64Toggle = useCallback(
     (isBase64: boolean) => {
       clearError(setToolData);
@@ -215,6 +250,10 @@ export default function ToolClient() {
     [setToolData]
   );
 
+  /**
+   * Generates the data URI from the current tool state.
+   * Validates inputs and shows a toast on success or error.
+   */
   const handleGenerateUri = useCallback(() => {
     const { uri, error } = generateDataUri(tool.state.data);
     if (error) {
@@ -226,10 +265,17 @@ export default function ToolClient() {
     }
   }, [tool.state.data, showToast, setToolData]);
 
+  /**
+   * Resets the tool state to its initial values.
+   */
   const handleClear = useCallback(() => {
     setToolData(dataUriTool.initialState);
   }, [setToolData]);
 
+  /**
+   * Copies the generated data URI to the clipboard.
+   * Shows a success or error toast based on the result.
+   */
   const handleCopyUri = useCallback(async () => {
     if (tool.state.data.dataUri) {
       await navigator.clipboard.writeText(tool.state.data.dataUri);
@@ -237,7 +283,10 @@ export default function ToolClient() {
     }
   }, [tool.state.data.dataUri, showToast]);
 
-  /** Paste text from clipboard as text input */
+  /**
+   * Reads text from the clipboard and populates the text input field.
+   * Automatically switches to text input mode.
+   */
   const handlePasteFromClipboard = useCallback(async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -252,6 +301,11 @@ export default function ToolClient() {
 
   // Keyboard shortcuts: Ctrl+Shift+C (copy), Ctrl+Shift+V (paste), Ctrl+Shift+E (export via config)
   useEffect(() => {
+    /**
+     * Handles keyboard shortcuts for the tool.
+     * - Ctrl+Shift+C: Copy data URI to clipboard
+     * - Ctrl+Shift+V: Paste text from clipboard
+     */
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
         if (e.key === 'c' || e.key === 'C') {
@@ -270,6 +324,36 @@ export default function ToolClient() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleCopyUri, handlePasteFromClipboard]);
 
+  // Global drag-and-drop: allow dropping files anywhere on the page
+  useEffect(() => {
+    const preventDefaults = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleGlobalDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const file = e.dataTransfer?.files?.[0];
+      if (file) {
+        handleInputModeChange('file');
+        handleFileUpload(file);
+        showToast(`File dropped: ${file.name}`, 'success');
+      }
+    };
+
+    window.addEventListener('dragover', preventDefaults);
+    window.addEventListener('drop', handleGlobalDrop);
+    return () => {
+      window.removeEventListener('dragover', preventDefaults);
+      window.removeEventListener('drop', handleGlobalDrop);
+    };
+  }, [handleFileUpload, handleInputModeChange, showToast]);
+
+  /**
+   * Creates a shareable URL with the current state compressed into query parameters.
+   * Uses the Web Share API if available, otherwise copies the URL to clipboard.
+   */
   const handleShare = useCallback(async () => {
     setIsSharing(true);
     try {

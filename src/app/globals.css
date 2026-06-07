@@ -884,6 +884,13 @@ body {
   margin: 0 0 0.75rem;
 }
 
+.sidebar-section-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
 .sidebar-column {
   display: flex;
   flex-direction: column;
