@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback } from 'react';
 import type { DataUriState } from '../types';
 
 interface ToolCanvasProps {
@@ -13,22 +12,17 @@ interface ToolCanvasProps {
 }
 
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
-  const handleCopy = useCallback(async () => {
-    if (state.dataUri && navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(state.dataUri);
-        onCopyUri?.();
-      } catch {
-        // Clipboard API rejected; silently ignore
-      }
-    }
-  }, [state.dataUri, onCopyUri]);
-
   const dataUriLength = state.dataUri.length;
-  const overheadBytes = state.dataUri.length;
   const originalSize = state.fileSize || state.textInput.length;
+  const sizeDiff = originalSize > 0 ? (dataUriLength - originalSize) : 0;
+  const sizeRatioPct =
+    originalSize > 0 ? ((dataUriLength / originalSize) * 100).toFixed(1) : '0';
   const overheadRatio =
-    originalSize > 0 ? ((overheadBytes / originalSize) * 100 - 100).toFixed(1) : '0';
+    originalSize > 0 ? ((dataUriLength / originalSize) * 100 - 100).toFixed(1) : '0';
+  // If the data URI is shorter than original content (e.g. binary → compressed base64),
+  // show savings; otherwise show overhead.
+  const sizeLabel = sizeDiff <= 0 ? `saved` : `overhead`;
+  const sizeAbsRatio = Math.abs(parseFloat(overheadRatio)).toFixed(1);
 
   return (
     <div
@@ -47,7 +41,13 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
                 {dataUriLength.toLocaleString()} chars
               </span>
               {originalSize > 0 && (
-                <span className="stat-badge stat-badge-overhead">+{overheadRatio}% overhead</span>
+                <span className={`stat-badge stat-badge-${sizeLabel}`}>
+                  {sizeDiff <= 0 ? '' : '+'}{overheadRatio}%
+                  {' '}{sizeLabel}
+                  <span className="stat-badge-detail">
+                    {' '}({originalSize.toLocaleString()} → {dataUriLength.toLocaleString()} chars)
+                  </span>
+                </span>
               )}
             </div>
           </div>
@@ -70,7 +70,7 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
             <button
               type="button"
               className="datauri-btn datauri-btn-primary"
-              onClick={onCopyUri || handleCopy}
+              onClick={onCopyUri}
               aria-label="Copy data URI to clipboard"
             >
               Copy to Clipboard

@@ -132,7 +132,11 @@ export function ToolSidebar({
               onDrop={handleDrop}
               role="button"
               tabIndex={0}
-              aria-label={state.fileName ? `Selected file: ${state.fileName}` : 'Click or drag a file to upload'}
+              aria-label={
+                state.fileName
+                  ? `Selected file: ${state.fileName}`
+                  : 'Click or drag a file to upload'
+              }
             >
               <input
                 type="file"
@@ -173,9 +177,15 @@ export function ToolSidebar({
               aria-label="URL input"
               placeholder="https://example.com/image.png"
             />
-            <p className="input-hint">
-              Enter a URL to fetch and convert its content. Note: CORS restrictions may apply.
-            </p>
+            <div className="input-hint-block">
+              <p className="input-hint">
+                Fetch content from a URL to convert to a data URI. Due to CORS restrictions, this only works client-side for same-origin or permissive servers.
+              </p>
+              <p className="input-hint input-hint-alt">
+                💡 For external URLs: download the file first and use{' '}
+                <strong>File</strong> mode instead.
+              </p>
+            </div>
           </div>
         )}
       </div>

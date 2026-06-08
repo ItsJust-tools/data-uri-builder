@@ -12,7 +12,6 @@ export type DataUriType =
   | 'image/jpeg'
   | 'image/webp'
   | 'image/gif'
-  | 'image/svg+xml;utf8'
   | 'application/pdf'
   | 'font/woff2'
   | 'font/woff'
@@ -49,7 +48,6 @@ export const DEFAULT_MIME_TYPES: { label: string; value: DataUriType }[] = [
   { label: 'image/jpeg', value: 'image/jpeg' },
   { label: 'image/webp', value: 'image/webp' },
   { label: 'image/gif', value: 'image/gif' },
-  { label: 'image/svg+xml;utf8', value: 'image/svg+xml;utf8' },
   { label: 'application/pdf', value: 'application/pdf' },
   { label: 'application/octet-stream', value: 'application/octet-stream' },
   { label: 'font/woff2', value: 'font/woff2' },
