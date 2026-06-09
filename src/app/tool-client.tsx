@@ -45,7 +45,7 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
     return {
       uri: '',
       error:
-        'URL fetching is not available in client-side mode. Please download the file and use file mode.',
+        'URL fetching is not supported client-side. Download the file and use File (upload) mode instead.',
     };
   }
 
