@@ -4,7 +4,7 @@
 
 A Data URI (Uniform Resource Identifier) is a way to embed small files directly in web pages and applications. Instead of linking to an external file, the file content is included as a string of text directly in the URI:
 
-```
+```text
 data:[<mime-type>][;base64],<data>
 ```
 

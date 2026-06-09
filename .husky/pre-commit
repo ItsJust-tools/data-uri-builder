@@ -1,4 +1,13 @@
 #!/bin/bash
-# Pre-commit hook: run lint and format before committing
-git add -p
-git commit --amend --no-edit || exit
+set -euo pipefail
+
+echo "Running lint-staged..."
+npx lint-staged
+
+echo "Running tests..."
+npm test 2>&1 || { echo "Tests failed. Commit blocked."; exit 1; }
+
+echo "Running build..."
+npm run build 2>&1 || { echo "Build failed. Commit blocked."; exit 1; }
+
+echo "Pre-commit checks passed."

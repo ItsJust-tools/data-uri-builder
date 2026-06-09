@@ -179,11 +179,12 @@ export function ToolSidebar({
             />
             <div className="input-hint-block">
               <p className="input-hint">
-                Fetch content from a URL to convert to a data URI. Due to CORS restrictions, this only works client-side for same-origin or permissive servers.
+                Fetch content from a URL to convert to a data URI. Due to CORS restrictions, this
+                only works client-side for same-origin or permissive servers.
               </p>
               <p className="input-hint input-hint-alt">
-                💡 For external URLs: download the file first and use{' '}
-                <strong>File</strong> mode instead.
+                💡 For external URLs: download the file first and use <strong>File</strong> mode
+                instead.
               </p>
             </div>
           </div>

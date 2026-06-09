@@ -1,4 +1,47 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+
+async function openSidebar(page: Page) {
+  const sidebar = page.locator('.tool-shell-sidebar');
+  if ((await sidebar.count()) === 0) return;
+
+  const isCollapsed = await sidebar.evaluate((el) => el.classList.contains('collapsed'));
+  if (isCollapsed) {
+    await page.locator('[data-sidebar-toggle]').click();
+    await expect(sidebar).toHaveClass(/open/);
+  }
+}
+
+async function fillTextarea(page: Page, name: string, value: string) {
+  const textarea = page.getByRole('textbox', { name });
+  await textarea.scrollIntoViewIfNeeded();
+  await textarea.evaluate((el, text) => {
+    const input = el as HTMLTextAreaElement;
+    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      'value'
+    )?.set;
+    nativeInputValueSetter?.call(input, text);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }, value);
+}
+
+async function clickInSidebar(page: Page, role: 'button' | 'tab' | 'checkbox', name: string) {
+  const control = page.getByRole(role, { name });
+  await page.locator('.sidebar-content').evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  });
+  await control.scrollIntoViewIfNeeded();
+  if (role === 'checkbox') {
+    await control.evaluate((el) => {
+      const input = el as HTMLInputElement;
+      if (!input.checked) input.click();
+    });
+    return;
+  }
+  await control.evaluate((el) => {
+    (el as HTMLElement).click();
+  });
+}
 
 test.describe('Data URI Builder E2E', () => {
   test('renders the tool with default content', async ({ page }) => {
@@ -9,60 +52,58 @@ test.describe('Data URI Builder E2E', () => {
 
   test('generates data URI from text input', async ({ page }) => {
     await page.goto('/');
+    await openSidebar(page);
 
-    // Type text content
-    const textarea = page.locator('textarea[aria-label="Text input"]');
-    await textarea.fill('Hello World');
+    const textarea = page.getByRole('textbox', { name: 'Text content to convert to data URI' });
+    await fillTextarea(page, 'Text content to convert to data URI', 'Hello World');
     await expect(textarea).toHaveValue('Hello World');
 
-    // Click generate button
-    await page.getByRole('button', { name: 'Generate Data URI' }).click();
+    await clickInSidebar(page, 'button', 'Generate Data URI');
 
-    // Check that data URI appears
-    const output = page.locator('textarea[aria-label="Generated data URI"]');
+    const output = page.getByRole('textbox', { name: 'Generated data URI' });
     await expect(output).toBeVisible();
     await expect(output).toHaveValue(/^data:/);
   });
 
   test('switches between input modes', async ({ page }) => {
     await page.goto('/');
+    await openSidebar(page);
 
-    // Click file tab
-    await page.getByRole('tab', { name: 'file input' }).click();
-    await expect(page.locator('text=Click to choose a file')).toBeVisible();
+    await clickInSidebar(page, 'tab', 'file input');
+    await expect(page.getByText(/Click or drag to choose a file/i)).toBeVisible();
 
-    // Click URL tab
-    await page.getByRole('tab', { name: 'url input' }).click();
+    await clickInSidebar(page, 'tab', 'url input');
     await expect(page.getByPlaceholder('https://example.com/image.png')).toBeVisible();
 
-    // Click text tab
-    await page.getByRole('tab', { name: 'text input' }).click();
-    await expect(page.locator('textarea[aria-label="Text input"]')).toBeVisible();
+    await clickInSidebar(page, 'tab', 'text input');
+    await expect(
+      page.getByRole('textbox', { name: 'Text content to convert to data URI' })
+    ).toBeVisible();
   });
 
   test('allows copying data URI to clipboard', async ({ page }) => {
     await page.goto('/');
+    await openSidebar(page);
 
-    // Type text and generate
-    await page.locator('textarea[aria-label="Text input"]').fill('Test copy');
-    await page.getByRole('button', { name: 'Generate Data URI' }).click();
+    await fillTextarea(page, 'Text content to convert to data URI', 'Test copy');
+    await clickInSidebar(page, 'button', 'Generate Data URI');
 
-    // Click copy button
-    await page.getByRole('button', { name: 'Copy data URI to clipboard' }).click();
+    await page
+      .getByRole('application', { name: 'Data URI Builder' })
+      .getByRole('button', { name: 'Copy data URI to clipboard' })
+      .click();
   });
 
   test('allows toggling base64 encoding', async ({ page }) => {
     await page.goto('/');
+    await openSidebar(page);
 
-    // Enable base64
-    await page.getByRole('checkbox', { name: 'Use base64 encoding' }).check();
+    await clickInSidebar(page, 'checkbox', 'Use base64 encoding');
 
-    // Type text and generate
-    await page.locator('textarea[aria-label="Text input"]').fill('Test');
-    await page.getByRole('button', { name: 'Generate Data URI' }).click();
+    await fillTextarea(page, 'Text content to convert to data URI', 'Test');
+    await clickInSidebar(page, 'button', 'Generate Data URI');
 
-    // Check data URI exists
-    const output = page.locator('textarea[aria-label="Generated data URI"]');
+    const output = page.getByRole('textbox', { name: 'Generated data URI' });
     await expect(output).toBeVisible();
   });
 });

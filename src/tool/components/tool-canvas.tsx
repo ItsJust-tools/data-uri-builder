@@ -14,15 +14,10 @@ interface ToolCanvasProps {
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
   const dataUriLength = state.dataUri.length;
   const originalSize = state.fileSize || state.textInput.length;
-  const sizeDiff = originalSize > 0 ? (dataUriLength - originalSize) : 0;
-  const sizeRatioPct =
-    originalSize > 0 ? ((dataUriLength / originalSize) * 100).toFixed(1) : '0';
+  const sizeDiff = originalSize > 0 ? dataUriLength - originalSize : 0;
   const overheadRatio =
     originalSize > 0 ? ((dataUriLength / originalSize) * 100 - 100).toFixed(1) : '0';
-  // If the data URI is shorter than original content (e.g. binary → compressed base64),
-  // show savings; otherwise show overhead.
   const sizeLabel = sizeDiff <= 0 ? `saved` : `overhead`;
-  const sizeAbsRatio = Math.abs(parseFloat(overheadRatio)).toFixed(1);
 
   return (
     <div
@@ -42,10 +37,11 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
               </span>
               {originalSize > 0 && (
                 <span className={`stat-badge stat-badge-${sizeLabel}`}>
-                  {sizeDiff <= 0 ? '' : '+'}{overheadRatio}%
-                  {' '}{sizeLabel}
+                  {sizeDiff <= 0 ? '' : '+'}
+                  {overheadRatio}% {sizeLabel}
                   <span className="stat-badge-detail">
-                    {' '}({originalSize.toLocaleString()} → {dataUriLength.toLocaleString()} chars)
+                    {' '}
+                    ({originalSize.toLocaleString()} → {dataUriLength.toLocaleString()} chars)
                   </span>
                 </span>
               )}
