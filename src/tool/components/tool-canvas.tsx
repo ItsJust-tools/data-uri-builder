@@ -37,11 +37,11 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
           <div className="datauri-header">
             <h2 className="datauri-title">Generated Data URI</h2>
             <div className="datauri-stats">
-              <span className="stat-badge stat-badge-size">
+              <span className="stat-badge stat-badge-size" title={`${dataUriLength.toLocaleString()} characters`}>
                 {dataUriLength.toLocaleString()} chars
               </span>
               {originalSize > 0 && (
-                <span className={`stat-badge stat-badge-${sizeLabel}`}>
+                <span className={`stat-badge stat-badge-${sizeLabel}`} title={`Original: ${originalSize.toLocaleString()} chars → URI: ${dataUriLength.toLocaleString()} chars`}>
                   {sizeDiff <= 0 ? '' : '+'}{overheadRatio}%
                   {' '}{sizeLabel}
                   <span className="stat-badge-detail">
@@ -57,6 +57,7 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
               value={state.dataUri}
               className="datauri-output"
               aria-label="Generated data URI"
+              title={`${dataUriLength.toLocaleString()} character data URI`}
               rows={Math.min(Math.ceil(dataUriLength / 80), 12)}
               onClick={(e) => (e.target as HTMLTextAreaElement).select()}
             />

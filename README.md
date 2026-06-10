@@ -17,10 +17,21 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 - **Base64 Encoding** — toggle base64 encoding on/off
 - **Copy & Download** — copy the data URI to clipboard or download as a file
 - **Preview** — open the data URI in a new tab to see the result
+- **Size Statistics** — shows character count, encoding overhead/savings ratio, and original vs. encoded size comparison
 - **Keyboard Friendly** — full keyboard navigation for all controls
 - **Dark Mode** — respects your system preference
 - **High Contrast Support** — accessible in high-contrast mode
 - **No Server** — everything runs in your browser, nothing is uploaded
+
+## Keyboard Shortcuts
+
+| Shortcut                   | Action                          |
+| -------------------------- | ------------------------------- |
+| `Ctrl+Shift+C`             | Copy data URI to clipboard      |
+| `Ctrl+Shift+V`             | Paste text from clipboard       |
+| `Delete`/`Backspace`       | Clear generated data URI        |
+| `Tab`                      | Navigate between UI sections    |
+| `Escape`                   | Close open panels               |
 
 ## How to Use
 
@@ -33,9 +44,10 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 
 ## Limitations
 
-- **URL mode** is client-side only and subject to CORS restrictions. Download the file first for reliable results.
-- **Base64** is automatically enabled for file uploads. Toggle it off for text inputs to produce smaller URIs.
-- **Blob size** directly impacts the data URI length. Very large files (several MB) may affect browser performance.
+- **URL mode** is client-side only and subject to CORS restrictions. Download the file first and use **File** (upload) mode for reliable results from external URLs.
+- **Base64** is automatically used for file uploads (FileReader provides base64). Toggle it off for text inputs to produce smaller, URL-encoded URIs.
+- **Blob size** directly impacts the data URI length. Very large files (several MB) may affect browser performance and memory usage.
+- **Custom MIME types** can be entered manually — useful for niche formats not in the preset list (e.g. `application/x-font-ttf`, `model/gltf+json`).
 
 ## Examples
 

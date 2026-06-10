@@ -253,7 +253,9 @@ export function ToolSidebar({
           }
           aria-label="Generate data URI"
         >
-          Generate Data URI
+          {state.inputMode === 'url' && state.urlInput
+            ? 'URL mode is not available (use File mode)'
+            : 'Generate Data URI'}
         </button>
         {state.dataUri && (
           <button

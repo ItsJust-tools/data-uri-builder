@@ -193,7 +193,8 @@ export default function ToolClient() {
             fileBytes: base64,
             selectedMimeType:
               detectedMime === 'application/octet-stream' ? prev.selectedMimeType : detectedMime,
-            isBase64: true,
+            // Don't force isBase64: the generate function already handles
+            // file mode content as pre-encoded base64 regardless of this flag
           }));
         }
       };
@@ -253,6 +254,8 @@ export default function ToolClient() {
   /**
    * Generates the data URI from the current tool state.
    * Validates inputs and shows a toast on success or error.
+   * In URL mode, immediately shows an info message since client-side
+   * URL fetching is not supported.
    */
   const handleGenerateUri = useCallback(() => {
     const { uri, error } = generateDataUri(tool.state.data);
