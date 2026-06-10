@@ -97,7 +97,7 @@ describe('app and seo', () => {
     // buildDataUri test
     expect(buildDataUri('text/plain', 'Hello', false)).toBe('data:text/plain,Hello');
     expect(buildDataUri('image/png', 'abc', true)).toBe('data:image/png;base64,' + btoa('abc'));
-    expect(buildDataUri('image/png', 'abc', false)).toBe('data:image/png;base64,abc');
+    expect(buildDataUri('image/png', 'abc', false, true)).toBe('data:image/png;base64,abc');
 
     // deserialize
     const validState: DataUriState = {

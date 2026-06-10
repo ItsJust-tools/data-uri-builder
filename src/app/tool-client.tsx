@@ -55,7 +55,9 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
       content,
       // For file mode, content is already base64-encoded from FileReader.readAsDataURL
       // so we pass isBase64=false to avoid double-encoding
-      state.inputMode === 'file' ? false : state.isBase64
+      state.inputMode === 'file' ? false : state.isBase64,
+      // Content from file upload is pre-encoded as base64 by FileReader
+      state.inputMode === 'file'
     ),
     error: '',
   };

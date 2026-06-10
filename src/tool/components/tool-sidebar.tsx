@@ -247,14 +247,14 @@ export function ToolSidebar({
           className="datauri-btn datauri-btn-primary datauri-btn-full"
           onClick={onGenerateUri}
           disabled={
+            state.inputMode === 'url' ||
             (state.inputMode === 'text' && !state.textInput) ||
-            (state.inputMode === 'file' && !state.fileBytes) ||
-            (state.inputMode === 'url' && !state.urlInput)
+            (state.inputMode === 'file' && !state.fileBytes)
           }
           aria-label="Generate data URI"
         >
-          {state.inputMode === 'url' && state.urlInput
-            ? 'URL mode is not available (use File mode)'
+          {state.inputMode === 'url'
+            ? 'URL mode not supported — use File mode instead'
             : 'Generate Data URI'}
         </button>
         {state.dataUri && (

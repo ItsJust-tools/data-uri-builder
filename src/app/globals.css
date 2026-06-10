@@ -4,9 +4,6 @@
 :root {
   --background: #f1f5f9;
   --foreground: #0f172a;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --accent-subtle: rgba(59, 130, 246, 0.08);
   --muted: #5a6a82;
   --muted-bg: #e8ecf1;
   --border: #d1d9e6;
@@ -37,9 +34,6 @@
 [data-theme='dark'] {
   --background: #0f1219;
   --foreground: #e2e8f0;
-  --accent: #5b9cf6;
-  --accent-hover: #7db4f8;
-  --accent-subtle: rgba(91, 156, 246, 0.12);
   --muted: #b7c3d6;
   --muted-bg: #1a1f2b;
   --border: #2a3148;
