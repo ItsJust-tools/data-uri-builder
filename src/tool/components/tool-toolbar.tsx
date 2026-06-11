@@ -33,3 +33,4 @@ export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps)
     </div>
   );
 }
+ToolToolbar.displayName = 'ToolToolbar';
