@@ -29,9 +29,8 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 | -------------------------- | ------------------------------- |
 | `Ctrl+Shift+C`             | Copy data URI to clipboard      |
 | `Ctrl+Shift+V`             | Paste text from clipboard       |
-| `Delete`/`Backspace`       | Clear generated data URI        |
-| `Tab`                      | Navigate between UI sections    |
-| `Escape`                   | Close open panels               |
+| `Delete`/`Backspace`       | Clear generated data URI (when not focused in an input) |
+| `Escape`                   | Close sidebar panel             |
 
 ## How to Use
 

@@ -330,8 +330,16 @@ export default function ToolClient() {
      * Handles keyboard shortcuts for the tool.
      * - Ctrl+Shift+C: Copy data URI to clipboard
      * - Ctrl+Shift+V: Paste text from clipboard
+     * - Delete/Backspace: Clear generated data URI
+     * - Escape: Close sidebar (if open)
      */
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input/textarea/select
+      const target = e.target as HTMLElement;
+      const isInputFocused =
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+
+      // Ctrl+Shift+C / Ctrl+Shift+V: global shortcuts that always work
       if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
         if (e.key === 'c' || e.key === 'C') {
           e.preventDefault();
@@ -344,10 +352,26 @@ export default function ToolClient() {
           return;
         }
       }
+
+      // Delete/Backspace: clear data URI (only when not in an input field)
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isInputFocused) {
+        if (tool.state.data.dataUri) {
+          e.preventDefault();
+          handleClear();
+        }
+        return;
+      }
+
+      // Escape: close sidebar if open
+      if (e.key === 'Escape' && sidebarOpen && !isInputFocused) {
+        e.preventDefault();
+        setSidebarOpen(false);
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCopyUri, handlePasteFromClipboard]);
+  }, [handleCopyUri, handlePasteFromClipboard, handleClear, sidebarOpen]);
 
   // Global drag-and-drop: allow dropping files anywhere on the page
   useEffect(() => {
