@@ -2,6 +2,34 @@
 
 import type { DataUriState } from '../types';
 
+/**
+ * Map MIME types to recommended file extensions for download.
+ * Falls back to a reasonable extension for common types.
+ */
+function extensionFromMime(mimeType: string): string {
+  const extMap: Record<string, string> = {
+    'text/plain': 'txt',
+    'text/html': 'html',
+    'text/css': 'css',
+    'text/javascript': 'js',
+    'application/json': 'json',
+    'application/xml': 'xml',
+    'image/svg+xml': 'svg',
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'application/pdf': 'pdf',
+    'font/woff2': 'woff2',
+    'font/woff': 'woff',
+    'audio/mpeg': 'mp3',
+    'audio/ogg': 'ogg',
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+  };
+  return extMap[mimeType] || 'bin';
+}
+
 interface ToolCanvasProps {
   /** Current tool state containing data URI and related info */
   state: DataUriState;
@@ -12,8 +40,9 @@ interface ToolCanvasProps {
 }
 
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
+  const mimeLabel = state.selectedMimeType === 'custom' ? state.customMimeType || 'application/octet-stream' : state.selectedMimeType;
   const dataUriLength = state.dataUri.length;
-  const originalSize = state.fileSize || state.textInput.length;
+  const originalSize = state.fileSize > 0 ? state.fileSize : (state.textInput.length || 0);
   const sizeDiff = originalSize > 0 ? (dataUriLength - originalSize) : 0;
   const overheadRatio =
     originalSize > 0 ? ((dataUriLength / originalSize) * 100 - 100).toFixed(1) : '0';
@@ -75,9 +104,9 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
             </button>
             <a
               href={state.dataUri}
-              download={state.fileName || 'data.txt'}
+              download={state.fileName || `data-uri.${extensionFromMime(mimeLabel)}`}
               className="datauri-btn datauri-btn-secondary"
-              aria-label="Download as file"
+              aria-label="Download data URI as file"
             >
               Download
             </a>
@@ -86,7 +115,7 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
               target="_blank"
               rel="noopener noreferrer"
               className="datauri-btn datauri-btn-outline"
-              aria-label="Preview in new tab"
+              aria-label="Preview data URI in new tab (opens in new window)"
             >
               Preview ↗
             </a>

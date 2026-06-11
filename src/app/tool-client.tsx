@@ -278,13 +278,33 @@ export default function ToolClient() {
   }, [setToolData]);
 
   /**
-   * Copies the generated data URI to the clipboard.
+   * Handles copying the generated data URI to the clipboard.
    * Shows a success or error toast based on the result.
+   * Uses the Clipboard API with a fallback for older browsers.
    */
   const handleCopyUri = useCallback(async () => {
-    if (tool.state.data.dataUri) {
+    if (!tool.state.data.dataUri) {
+      showToast('Nothing to copy — generate a data URI first', 'error');
+      return;
+    }
+    try {
       await navigator.clipboard.writeText(tool.state.data.dataUri);
       showToast('Data URI copied to clipboard', 'success');
+    } catch {
+      // Fallback for older browsers or insecure contexts
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = tool.state.data.dataUri;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('Data URI copied to clipboard', 'success');
+      } catch {
+        showToast('Failed to copy — your browser may not support clipboard access', 'error');
+      }
     }
   }, [tool.state.data.dataUri, showToast]);
 
@@ -444,6 +464,13 @@ export default function ToolClient() {
       {tool.state.data.dataUri && (
         <span className="status-slot status-slot-length">
           {tool.state.data.dataUri.length.toLocaleString()} chars
+        </span>
+      )}
+      {tool.state.data.dataUri && (
+        <span className="status-slot status-slot-mime">
+          {tool.state.data.selectedMimeType === 'custom'
+            ? tool.state.data.customMimeType || 'custom'
+            : tool.state.data.selectedMimeType}
         </span>
       )}
       <span className="status-slot status-slot-tool-version">Tool v{toolConfig.version}</span>
