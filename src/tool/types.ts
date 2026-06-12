@@ -18,8 +18,10 @@ export type DataUriType =
   | 'font/woff'
   | 'audio/mpeg'
   | 'audio/ogg'
+  | 'audio/wav'
   | 'video/mp4'
   | 'video/webm'
+  | 'font/otf'
   | 'application/octet-stream'
   | 'custom';
 
@@ -56,7 +58,9 @@ export const DEFAULT_MIME_TYPES: { label: string; value: DataUriType }[] = [
   { label: 'font/woff', value: 'font/woff' },
   { label: 'audio/mpeg', value: 'audio/mpeg' },
   { label: 'audio/ogg', value: 'audio/ogg' },
+  { label: 'audio/wav', value: 'audio/wav' },
   { label: 'video/mp4', value: 'video/mp4' },
   { label: 'video/webm', value: 'video/webm' },
+  { label: 'font/otf', value: 'font/otf' },
   { label: 'Custom…', value: 'custom' },
 ];

@@ -13,7 +13,7 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 
 - **Text to Data URI** — type or paste any text, choose MIME type, get a data: URL
 - **File Upload** — drag or upload any file (images, PDFs, fonts, audio, video)
-- **MIME Type Selection** — 20+ common MIME types or enter a custom one
+- **MIME Type Selection** — 22+ common MIME types or enter a custom one
 - **Base64 Encoding** — toggle base64 encoding on/off
 - **Copy & Download** — copy the data URI to clipboard or download as a file with auto-detected extension based on MIME type
 - **Preview** — open the data URI in a new tab to see the result

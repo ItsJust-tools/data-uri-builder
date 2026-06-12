@@ -7,7 +7,7 @@ import type { DataUriState } from '../types';
  * Falls back to a reasonable extension for common types.
  */
 function extensionFromMime(mimeType: string): string {
-const extensionMap = {
+  const extensionMap = {
     'text/plain': 'txt',
     'text/html': 'html',
     'text/css': 'css',
@@ -25,14 +25,19 @@ const extensionMap = {
     'font/ttf': 'ttf',
     'audio/mpeg': 'mp3',
     'audio/ogg': 'ogg',
+    'audio/wav': 'wav',
     'video/mp4': 'mp4',
     'video/webm': 'webm',
+    'font/otf': 'otf',
     'application/octet-stream': 'bin',
   } as const;
 
   return extensionMap[mimeType as keyof typeof extensionMap] || 'bin';
 }
 
+/**
+ * Properties passed to the ToolCanvas component.
+ */
 interface ToolCanvasProps {
   /** Current tool state containing data URI and related info */
   state: DataUriState;
@@ -42,6 +47,11 @@ interface ToolCanvasProps {
   onCopyUri?: () => void;
 }
 
+/**
+ * Main canvas component for the Data URI Builder.
+ * Displays the generated data URI along with size statistics, copy/download/preview actions,
+ * and an empty state prompt when no URI has been produced yet.
+ */
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
   const mimeLabel = state.selectedMimeType === 'custom' ? state.customMimeType || 'application/octet-stream' : state.selectedMimeType;
   const dataUriLength = state.dataUri.length;
@@ -109,6 +119,7 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
               download={state.fileName || `data-uri.${extensionFromMime(mimeLabel)}`}
               className="datauri-btn datauri-btn-secondary"
               aria-label="Download data URI as file"
+              title={state.fileName || `data-uri.${extensionFromMime(mimeLabel)}`}
             >
               Download
             </a>

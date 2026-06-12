@@ -145,6 +145,7 @@ export default function ToolClient() {
       woff: 'font/woff',
       mp3: 'audio/mpeg',
       ogg: 'audio/ogg',
+      wav: 'audio/wav',
       mp4: 'video/mp4',
       webm: 'video/webm',
     };
