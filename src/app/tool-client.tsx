@@ -69,10 +69,8 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
  *
  * @param setter - Tool state setter function from useTool
  */
-function clearError(
-  setter: React.Dispatch<React.SetStateAction<DataUriState>> | ((prev: DataUriState) => void)
-) {
-  (setter as (update: (prev: DataUriState) => DataUriState) => void)((prev: DataUriState) => {
+function clearError(setter: React.Dispatch<React.SetStateAction<DataUriState>>) {
+  setter((prev) => {
     if (prev.error) return { ...prev, error: '' };
     return prev;
   });
@@ -276,9 +274,13 @@ export default function ToolClient() {
 
   /**
    * Resets the tool state to its initial values.
+   * Also resets the global drag-and-drop overlay state so a subsequent
+   * drag isn't incorrectly shown after clearing.
    */
   const handleClear = useCallback(() => {
     setToolData(dataUriTool.initialState);
+    dragCounter.current = 0;
+    setIsDragOver(false);
   }, [setToolData]);
 
   /**

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useId, type DragEvent } from 'react';
+import { useCallback, useRef, useState, useId, type DragEvent, type KeyboardEvent } from 'react';
 import type { DataUriState, InputMode, DataUriType } from '../types';
 import { DEFAULT_MIME_TYPES } from '../types';
 
@@ -75,6 +75,27 @@ export function ToolSidebar({
   const fileInputId = useId();
   const mimeSelectId = useId();
   const customMimeInputId = useId();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  function formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  }
+
+  /**
+   * Handles keyboard interaction on the file upload zone.
+   * Enter or Space triggers the hidden file input, making the zone
+   * fully keyboard-accessible rather than click-only.
+   */
+  const handleFileUploadKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      fileInputRef.current?.click();
+    }
+  }, []);
 
   return (
     <div className="datauri-sidebar" role="form" aria-label="Data URI options">
@@ -132,23 +153,26 @@ export function ToolSidebar({
               onDrop={handleDrop}
               role="button"
               tabIndex={0}
+              onKeyDown={handleFileUploadKeyDown}
               aria-label={
                 state.fileName
-                  ? `Selected file: ${state.fileName}`
-                  : 'Click or drag a file to upload'
+                  ? `Selected file: ${state.fileName}. Press Enter to choose a different file.`
+                  : 'Click, press Enter, or drag a file to upload'
               }
             >
               <input
                 type="file"
                 id={fileInputId}
+                ref={fileInputRef}
                 className="file-input-hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) onFileUpload(file);
                 }}
-                aria-label="Choose a file to convert to data URI"
+                tabIndex={-1}
+                aria-hidden="true"
               />
-              <label htmlFor={fileInputId} className="file-upload-label">
+              <div className="file-upload-label" role="presentation">
                 <div className="file-upload-icon" aria-hidden="true">
                   📂
                 </div>
@@ -157,12 +181,12 @@ export function ToolSidebar({
                     (isDragOver ? 'Drop file here' : 'Click or drag to choose a file')}
                 </div>
                 {state.fileSize > 0 && (
-                  <div className="file-upload-size">{(state.fileSize / 1024).toFixed(1)} KB</div>
+                  <div className="file-upload-size">{formatFileSize(state.fileSize)}</div>
                 )}
                 {!state.fileName && (
                   <div className="file-upload-hint">Drag &amp; drop or click to browse</div>
                 )}
-              </label>
+              </div>
             </div>
           </div>
         )}

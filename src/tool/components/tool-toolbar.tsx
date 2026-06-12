@@ -30,6 +30,9 @@ export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps)
       <span className="datauri-toolbar-hint">
         <kbd>Ctrl+Shift+V</kbd> Paste
       </span>
+      <span className="datauri-toolbar-hint">
+        <kbd>Ctrl+Shift+E</kbd> Export
+      </span>
     </div>
   );
 }
