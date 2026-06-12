@@ -242,21 +242,30 @@ export function ToolSidebar({
 
       {/* Generate & Clear */}
       <div className="sidebar-section sidebar-actions">
-        <button
-          type="button"
-          className="datauri-btn datauri-btn-primary datauri-btn-full"
-          onClick={onGenerateUri}
-          disabled={
-            state.inputMode === 'url' ||
-            (state.inputMode === 'text' && !state.textInput) ||
-            (state.inputMode === 'file' && !state.fileBytes)
-          }
-          aria-label="Generate data URI"
-        >
-          {state.inputMode === 'url'
-            ? 'URL mode not supported — use File mode instead'
-            : 'Generate Data URI'}
-        </button>
+        {state.inputMode === 'url' ? (
+          <div className="url-mode-notice" role="status">
+            <div className="url-mode-notice-header">
+              <span aria-hidden="true">🔗</span> URL mode — client-side only
+            </div>
+            <p className="url-mode-notice-text">
+              Direct URL fetching is limited by CORS. Switch to <strong>File</strong> mode
+              and upload the file for reliable results.
+            </p>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="datauri-btn datauri-btn-primary datauri-btn-full"
+            onClick={onGenerateUri}
+            disabled={
+              (state.inputMode === 'text' && !state.textInput) ||
+              (state.inputMode === 'file' && !state.fileBytes)
+            }
+            aria-label="Generate data URI"
+          >
+            Generate Data URI
+          </button>
+        )}
         {state.dataUri && (
           <button
             type="button"

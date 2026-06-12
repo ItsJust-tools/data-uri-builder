@@ -88,6 +88,8 @@ export default function ToolClient() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(
     () => typeof window !== 'undefined' && window.innerWidth > 768 && toolConfig.features.sidebar
   );
+  const [isDragOver, setIsDragOver] = useState(false);
+  const dragCounter = useRef(0);
 
   const title = toolConfig.name;
 
@@ -375,14 +377,35 @@ export default function ToolClient() {
 
   // Global drag-and-drop: allow dropping files anywhere on the page
   useEffect(() => {
-    const preventDefaults = (e: DragEvent) => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current++;
+      if (dragCounter.current === 1) {
+        setIsDragOver(true);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
     };
 
-    const handleGlobalDrop = (e: DragEvent) => {
+    const handleDragLeave = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      dragCounter.current--;
+      if (dragCounter.current <= 0) {
+        dragCounter.current = 0;
+        setIsDragOver(false);
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current = 0;
+      setIsDragOver(false);
       const file = e.dataTransfer?.files?.[0];
       if (file) {
         handleInputModeChange('file');
@@ -391,11 +414,15 @@ export default function ToolClient() {
       }
     };
 
-    window.addEventListener('dragover', preventDefaults);
-    window.addEventListener('drop', handleGlobalDrop);
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('drop', handleDrop);
     return () => {
-      window.removeEventListener('dragover', preventDefaults);
-      window.removeEventListener('drop', handleGlobalDrop);
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
     };
   }, [handleFileUpload, handleInputModeChange, showToast]);
 
@@ -466,7 +493,22 @@ export default function ToolClient() {
   );
 
   const canvasContent = (
-    <ToolCanvas canvasRef={canvasRef} state={tool.state.data} onCopyUri={handleCopyUri} />
+    <div className="datauri-canvas-wrapper">
+      <ToolCanvas canvasRef={canvasRef} state={tool.state.data} onCopyUri={handleCopyUri} />
+      {isDragOver && (
+        <div
+          className="drop-overlay"
+          role="status"
+          aria-live="polite"
+          aria-label="Drop file here"
+        >
+          <div className="drop-overlay-content">
+            <span className="drop-overlay-icon" aria-hidden="true">📁</span>
+            <span className="drop-overlay-text">Drop file anywhere to convert</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   const statusBarContent = (
