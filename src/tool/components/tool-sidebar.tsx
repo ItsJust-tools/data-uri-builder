@@ -249,8 +249,8 @@ export function ToolSidebar({
               <span aria-hidden="true">🔗</span> URL mode — client-side only
             </div>
             <p className="url-mode-notice-text">
-              Direct URL fetching is limited by CORS. Switch to <strong>File</strong> mode
-              and upload the file for reliable results.
+              Direct URL fetching is limited by CORS. Switch to <strong>File</strong> mode and
+              upload the file for reliable results.
             </p>
           </div>
         ) : (
