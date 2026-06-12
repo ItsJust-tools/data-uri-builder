@@ -49,8 +49,6 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
   const sizeDiff = originalSize > 0 ? (dataUriLength - originalSize) : 0;
   const overheadRatio =
     originalSize > 0 ? ((dataUriLength / originalSize) * 100 - 100).toFixed(1) : '0';
-  // If the data URI is shorter than original content (e.g. binary → compressed base64),
-  // show savings; otherwise show overhead.
   const sizeLabel = sizeDiff <= 0 ? 'saved' : 'overhead';
 
   return (
@@ -74,7 +72,8 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
                   {sizeDiff <= 0 ? '' : '+'}{overheadRatio}%
                   {' '}{sizeLabel}
                   <span className="stat-badge-detail">
-                    {' '}({originalSize.toLocaleString()} → {dataUriLength.toLocaleString()} chars)
+                    {' '}
+                    ({originalSize.toLocaleString()} → {dataUriLength.toLocaleString()} chars)
                   </span>
                 </span>
               )}
