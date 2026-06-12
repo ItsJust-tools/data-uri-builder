@@ -86,7 +86,7 @@ export default function HelpPage() {
             <li><strong>Use URL encoding for text</strong> — It produces smaller URIs than base64 for text content (no 33% overhead).</li>
             <li><strong>Use base64 for binary files</strong> — Images, fonts, PDFs, audio, and video must use base64 encoding.</li>
             <li><strong>Drag &amp; drop</strong> — You can drag a file from your file manager directly onto the sidebar or anywhere on the page.</li>
-            <li><strong>Keyboard shortcuts</strong> — Use <kbd>Ctrl+Shift+C</kbd> to copy the data URI and <kbd>Ctrl+Shift+V</kbd> to paste text from clipboard.</li>
+            <li><strong>Keyboard shortcuts</strong> — Use <kbd>Ctrl+Shift+C</kbd> to copy the data URI, <kbd>Ctrl+Shift+V</kbd> to paste text from clipboard, and <kbd>Ctrl+Shift+E</kbd> to export the tool state.</li>
             <li><strong>Share via URL</strong> — Use the share button to encode the current state into the URL. Send it to others.</li>
             <li><strong>Dark mode</strong> — The tool follows your system preference. Toggle manually with the theme button.</li>
           </ul>

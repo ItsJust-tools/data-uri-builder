@@ -29,6 +29,7 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 | -------------------------- | ------------------------------- |
 | `Ctrl+Shift+C`             | Copy data URI to clipboard      |
 | `Ctrl+Shift+V`             | Paste text from clipboard       |
+| `Ctrl+Shift+E`             | Export tool state in all formats |
 | `Delete`/`Backspace`       | Clear generated data URI (when not focused in an input) |
 | `Escape`                   | Close sidebar panel             |
 
@@ -55,6 +56,20 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 | `<h1>Hello</h1>`  | text/html        | `data:text/html,%3Ch1%3EHello%3C/h1%3E`               |
 | image.png         | image/png        | `data:image/png;base64,iVBORw0KGgo...`                |
 | `{"key":"value"}` | application/json | `data:application/json,%7B%22key%22%3A%22value%22%7D` |
+
+## Drag & Drop
+
+Drag any file from your file manager directly onto the page or into the file upload zone. The tool automatically switches to File mode and detects the MIME type from the file extension.
+
+## Sharing State
+
+You can share your current tool state via a compressed URL:
+
+1. Click the **Share** button in the toolbar
+2. A URL containing your current configuration is copied to your clipboard
+3. Share the URL with anyone — they'll see the same data URI setup when they open it
+
+**Note:** Shared state only persists in the URL. Close the page and the data is not stored anywhere.
 
 ## Development
 

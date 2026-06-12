@@ -7,7 +7,7 @@ import type { DataUriState } from '../types';
  * Falls back to a reasonable extension for common types.
  */
 function extensionFromMime(mimeType: string): string {
-  const extMap: Record<string, string> = {
+const extensionMap = {
     'text/plain': 'txt',
     'text/html': 'html',
     'text/css': 'css',
@@ -22,12 +22,15 @@ function extensionFromMime(mimeType: string): string {
     'application/pdf': 'pdf',
     'font/woff2': 'woff2',
     'font/woff': 'woff',
+    'font/ttf': 'ttf',
     'audio/mpeg': 'mp3',
     'audio/ogg': 'ogg',
     'video/mp4': 'mp4',
     'video/webm': 'webm',
-  };
-  return extMap[mimeType] || 'bin';
+    'application/octet-stream': 'bin',
+  } as const;
+
+  return extensionMap[mimeType as keyof typeof extensionMap] || 'bin';
 }
 
 interface ToolCanvasProps {
