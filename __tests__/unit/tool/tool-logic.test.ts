@@ -228,7 +228,8 @@ describe('Data URI Builder deserialize', () => {
   });
 
   it('rejects state with missing textInput field', () => {
-    const { textInput: _, ...partial } = defaultState;
+    const { textInput, ...partial } = defaultState;
+    void textInput; // used in destructuring
     const result = dataUriTool.deserialize(partial);
     expect(result.success).toBe(false);
   });

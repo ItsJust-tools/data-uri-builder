@@ -140,6 +140,7 @@ export default function ToolClient() {
       webp: 'image/webp',
       gif: 'image/gif',
       pdf: 'application/pdf',
+      ttf: 'font/ttf',
       woff2: 'font/woff2',
       woff: 'font/woff',
       mp3: 'audio/mpeg',
@@ -373,7 +374,7 @@ export default function ToolClient() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCopyUri, handlePasteFromClipboard, handleClear, sidebarOpen]);
+  }, [handleCopyUri, handlePasteFromClipboard, handleClear, sidebarOpen, tool.state.data.dataUri]);
 
   // Global drag-and-drop: allow dropping files anywhere on the page
   useEffect(() => {
