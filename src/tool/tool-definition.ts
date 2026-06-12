@@ -34,21 +34,29 @@ function isDataUriState(value: unknown): value is DataUriState {
  * Build a data URI string from the given MIME type, content, and encoding preference.
  *
  * Behavior by encoding mode:
- * - When `isBase64` is true: the content is base64-encoded, `;base64` is appended
- *   to the MIME type. Supports non-Latin1 characters via TextEncoder fallback.
- * - When `isBase64` is false and the MIME type starts with `text/`: content is
- *   URL-encoded, no charset suffix.
- * - When `isBase64` is false and the MIME type is non-text: content is assumed
- *   to be pre-encoded base64 (e.g. from a file upload), `;base64` is appended,
- *   and the content is passed through as-is (no double-encoding).
+ * - When `isBase64` is true and `isPreEncoded` is false: the content is
+ *   base64-encoded (with TextEncoder fallback for non-Latin1), and `;base64`
+ *   is appended to the MIME type.
+ * - When `isBase64` is true and `isPreEncoded` is true: the content is already
+ *   base64 (e.g. from a file upload via FileReader). `;base64` is appended but
+ *   the content is passed through as-is.
+ * - When `isBase64` is false: content is URL-encoded. The MIME type determines
+ *   whether the resulting URI uses `;base64` or not — text types are plain URI
+ *   encoded, non-text types get `;base64` for compatibility.
  *
  * @param mimeType - MIME type string (e.g. "text/plain", "image/png")
  * @param content - Raw content string to encode
  * @param isBase64 - Whether to base64-encode the content
+ * @param isPreEncoded - Whether the content is already base64-encoded
  * @returns A complete data URI string
  */
-function buildDataUri(mimeType: string, content: string, isBase64: boolean): string {
-  if (isBase64) {
+function buildDataUri(
+  mimeType: string,
+  content: string,
+  isBase64: boolean,
+  isPreEncoded = false
+): string {
+  if (isBase64 && !isPreEncoded) {
     // Encode raw content to base64
     let base64: string;
     try {
@@ -66,13 +74,13 @@ function buildDataUri(mimeType: string, content: string, isBase64: boolean): str
     return `data:${mimeType};base64,${base64}`;
   }
 
-  if (mimeType.startsWith('text/')) {
-    // URL-encode text content, no charset suffix
-    return `data:${mimeType},${encodeURIComponent(content)}`;
+  if (isPreEncoded) {
+    // Content is already base64-encoded (e.g. from FileReader)
+    return `data:${mimeType};base64,${content}`;
   }
 
-  // Non-text content without base64 flag: assume pre-encoded base64
-  return `data:${mimeType};base64,${content}`;
+  // URL-encode text content, no charset suffix
+  return `data:${mimeType},${encodeURIComponent(content)}`;
 }
 
 export const dataUriTool: Tool<DataUriState> = {

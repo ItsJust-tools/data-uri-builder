@@ -45,7 +45,7 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
     return {
       uri: '',
       error:
-        'URL fetching is not available in client-side mode. Please download the file and use file mode.',
+        'URL fetching is not supported client-side. Download the file and use File (upload) mode instead.',
     };
   }
 
@@ -55,7 +55,9 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
       content,
       // For file mode, content is already base64-encoded from FileReader.readAsDataURL
       // so we pass isBase64=false to avoid double-encoding
-      state.inputMode === 'file' ? false : state.isBase64
+      state.inputMode === 'file' ? false : state.isBase64,
+      // Content from file upload is pre-encoded as base64 by FileReader
+      state.inputMode === 'file'
     ),
     error: '',
   };
@@ -86,6 +88,8 @@ export default function ToolClient() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(
     () => typeof window !== 'undefined' && window.innerWidth > 768 && toolConfig.features.sidebar
   );
+  const [isDragOver, setIsDragOver] = useState(false);
+  const dragCounter = useRef(0);
 
   const title = toolConfig.name;
 
@@ -136,6 +140,7 @@ export default function ToolClient() {
       webp: 'image/webp',
       gif: 'image/gif',
       pdf: 'application/pdf',
+      ttf: 'font/ttf',
       woff2: 'font/woff2',
       woff: 'font/woff',
       mp3: 'audio/mpeg',
@@ -193,7 +198,8 @@ export default function ToolClient() {
             fileBytes: base64,
             selectedMimeType:
               detectedMime === 'application/octet-stream' ? prev.selectedMimeType : detectedMime,
-            isBase64: true,
+            // Don't force isBase64: the generate function already handles
+            // file mode content as pre-encoded base64 regardless of this flag
           }));
         }
       };
@@ -253,6 +259,8 @@ export default function ToolClient() {
   /**
    * Generates the data URI from the current tool state.
    * Validates inputs and shows a toast on success or error.
+   * In URL mode, immediately shows an info message since client-side
+   * URL fetching is not supported.
    */
   const handleGenerateUri = useCallback(() => {
     const { uri, error } = generateDataUri(tool.state.data);
@@ -273,13 +281,33 @@ export default function ToolClient() {
   }, [setToolData]);
 
   /**
-   * Copies the generated data URI to the clipboard.
+   * Handles copying the generated data URI to the clipboard.
    * Shows a success or error toast based on the result.
+   * Uses the Clipboard API with a fallback for older browsers.
    */
   const handleCopyUri = useCallback(async () => {
-    if (tool.state.data.dataUri) {
+    if (!tool.state.data.dataUri) {
+      showToast('Nothing to copy — generate a data URI first', 'error');
+      return;
+    }
+    try {
       await navigator.clipboard.writeText(tool.state.data.dataUri);
       showToast('Data URI copied to clipboard', 'success');
+    } catch {
+      // Fallback for older browsers or insecure contexts
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = tool.state.data.dataUri;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('Data URI copied to clipboard', 'success');
+      } catch {
+        showToast('Failed to copy — your browser may not support clipboard access', 'error');
+      }
     }
   }, [tool.state.data.dataUri, showToast]);
 
@@ -305,8 +333,16 @@ export default function ToolClient() {
      * Handles keyboard shortcuts for the tool.
      * - Ctrl+Shift+C: Copy data URI to clipboard
      * - Ctrl+Shift+V: Paste text from clipboard
+     * - Delete/Backspace: Clear generated data URI
+     * - Escape: Close sidebar (if open)
      */
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input/textarea/select
+      const target = e.target as HTMLElement;
+      const isInputFocused =
+        target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+
+      // Ctrl+Shift+C / Ctrl+Shift+V: global shortcuts that always work
       if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
         if (e.key === 'c' || e.key === 'C') {
           e.preventDefault();
@@ -319,21 +355,58 @@ export default function ToolClient() {
           return;
         }
       }
+
+      // Delete/Backspace: clear data URI (only when not in an input field)
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !isInputFocused) {
+        if (tool.state.data.dataUri) {
+          e.preventDefault();
+          handleClear();
+        }
+        return;
+      }
+
+      // Escape: close sidebar if open
+      if (e.key === 'Escape' && sidebarOpen && !isInputFocused) {
+        e.preventDefault();
+        setSidebarOpen(false);
+        return;
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleCopyUri, handlePasteFromClipboard]);
+  }, [handleCopyUri, handlePasteFromClipboard, handleClear, sidebarOpen, tool.state.data.dataUri]);
 
   // Global drag-and-drop: allow dropping files anywhere on the page
   useEffect(() => {
-    const preventDefaults = (e: DragEvent) => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current++;
+      if (dragCounter.current === 1) {
+        setIsDragOver(true);
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
     };
 
-    const handleGlobalDrop = (e: DragEvent) => {
+    const handleDragLeave = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      dragCounter.current--;
+      if (dragCounter.current <= 0) {
+        dragCounter.current = 0;
+        setIsDragOver(false);
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current = 0;
+      setIsDragOver(false);
       const file = e.dataTransfer?.files?.[0];
       if (file) {
         handleInputModeChange('file');
@@ -342,11 +415,15 @@ export default function ToolClient() {
       }
     };
 
-    window.addEventListener('dragover', preventDefaults);
-    window.addEventListener('drop', handleGlobalDrop);
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('drop', handleDrop);
     return () => {
-      window.removeEventListener('dragover', preventDefaults);
-      window.removeEventListener('drop', handleGlobalDrop);
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('drop', handleDrop);
     };
   }, [handleFileUpload, handleInputModeChange, showToast]);
 
@@ -417,7 +494,22 @@ export default function ToolClient() {
   );
 
   const canvasContent = (
-    <ToolCanvas canvasRef={canvasRef} state={tool.state.data} onCopyUri={handleCopyUri} />
+    <div className="datauri-canvas-wrapper">
+      <ToolCanvas canvasRef={canvasRef} state={tool.state.data} onCopyUri={handleCopyUri} />
+      {isDragOver && (
+        <div
+          className="drop-overlay"
+          role="status"
+          aria-live="polite"
+          aria-label="Drop file here"
+        >
+          <div className="drop-overlay-content">
+            <span className="drop-overlay-icon" aria-hidden="true">📁</span>
+            <span className="drop-overlay-text">Drop file anywhere to convert</span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   const statusBarContent = (
@@ -439,6 +531,13 @@ export default function ToolClient() {
       {tool.state.data.dataUri && (
         <span className="status-slot status-slot-length">
           {tool.state.data.dataUri.length.toLocaleString()} chars
+        </span>
+      )}
+      {tool.state.data.dataUri && (
+        <span className="status-slot status-slot-mime">
+          {tool.state.data.selectedMimeType === 'custom'
+            ? tool.state.data.customMimeType || 'custom'
+            : tool.state.data.selectedMimeType}
         </span>
       )}
       <span className="status-slot status-slot-tool-version">Tool v{toolConfig.version}</span>

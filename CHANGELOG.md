@@ -4,11 +4,23 @@
 
 ### Added
 
-- **Copy URI button in toolbar**: Added an actionable "Copy URI" button next to shortcut hints when a data URI has been generated, making the copy function accessible via click as well as keyboard
+- **Keyboard shortcuts in README**: Added keyboard shortcuts table documenting `Ctrl+Shift+C`, `Ctrl+Shift+V`, `Delete`/`Backspace`, `Tab`, and `Escape` shortcuts
+- **Title attributes on stat badges**: Added tooltip titles to character count and overhead badges for additional context on hover
+- **Title attribute on output textarea**: Shows data URI character count on hover
 
 ### Changed
 
-- **package.json metadata**: Added missing `homepage`, `bugs`, and `keywords` fields for better npm ecosystem discoverability
+- **Copy URI button in toolbar**: Added an actionable "Copy URI" button next to shortcut hints when a data URI has been generated, making the copy function accessible via click as well as keyboard
+- **Improved URL mode UX**: Generate button now shows "URL mode is not available (use File mode)" instead of a generic label when a URL is entered, making the limitation clearer
+- **Fixed misleading isBase64 state**: Removed forced `isBase64: true` in file upload handler — the generate function already treats file mode content as pre-encoded base64, so forcing the flag was confusing and out of sync with actual behavior
+
+### Fixed
+
+- **Parse error in sidebar JSX**: Removed stray closing braces that caused a build failure in the tool-sidebar component
+
+### Docs
+
+- **Expand README**: Added keyboard shortcuts table, expanded Features with size statistics, expanded Limitations with custom MIME type guidance
 
 ## [1.1.0] — 2026-06-03
 

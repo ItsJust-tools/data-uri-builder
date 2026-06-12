@@ -13,6 +13,7 @@ export type DataUriType =
   | 'image/webp'
   | 'image/gif'
   | 'application/pdf'
+  | 'font/ttf'
   | 'font/woff2'
   | 'font/woff'
   | 'audio/mpeg'
@@ -50,6 +51,7 @@ export const DEFAULT_MIME_TYPES: { label: string; value: DataUriType }[] = [
   { label: 'image/gif', value: 'image/gif' },
   { label: 'application/pdf', value: 'application/pdf' },
   { label: 'application/octet-stream', value: 'application/octet-stream' },
+  { label: 'font/ttf', value: 'font/ttf' },
   { label: 'font/woff2', value: 'font/woff2' },
   { label: 'font/woff', value: 'font/woff' },
   { label: 'audio/mpeg', value: 'audio/mpeg' },

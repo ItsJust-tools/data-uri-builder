@@ -36,12 +36,12 @@ describe('Data URI Builder logic', () => {
   });
 
   it('builds data URI for pre-encoded base64 content (file mode)', () => {
-    const uri = buildDataUri('image/png', 'iVBORw0KGgo=', false);
+    const uri = buildDataUri('image/png', 'iVBORw0KGgo=', false, true);
     expect(uri).toBe('data:image/png;base64,iVBORw0KGgo=');
   });
 
   it('builds data URI for non-text content without base64 flag (pre-encoded)', () => {
-    const uri = buildDataUri('application/json', 'eyJrZXkiOiJ2YWwifQ==', false);
+    const uri = buildDataUri('application/json', 'eyJrZXkiOiJ2YWwifQ==', false, true);
     expect(uri).toBe('data:application/json;base64,eyJrZXkiOiJ2YWwifQ==');
   });
 
@@ -71,9 +71,9 @@ describe('Data URI Builder logic', () => {
     expect(uri).toBe('data:text/plain;base64,');
   });
 
-  it('handles non-Latin1 characters without base64 (non-text mime)', () => {
-    // Non-text mime with non-base64 content should pass as-is
-    const uri = buildDataUri('application/octet-stream', '\x00\xFF\xFE', false);
+  it('handles non-Latin1 characters without base64 (non-text mime — pre-encoded)', () => {
+    // Non-text mime with non-base64 content passed as pre-encoded
+    const uri = buildDataUri('application/octet-stream', '\x00\xFF\xFE', false, true);
     expect(uri).toBe('data:application/octet-stream;base64,\x00\xFF\xFE');
   });
 
@@ -91,12 +91,14 @@ describe('Data URI Builder logic', () => {
     expect(uri).toContain(encodeURIComponent(css));
   });
 
-  it('builds data URI for SVG content (non-text mime — passed as-is)', () => {
+  it('builds data URI for SVG content (text-type mime — URL-encoded)', () => {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>';
     const uri = buildDataUri('image/svg+xml', svg, false);
-    // Non-text mimes are treated as pre-encoded base64 (passthrough)
-    expect(uri).toContain('data:image/svg+xml;base64,');
-    expect(uri).toContain(svg);
+    // image/svg+xml starts with 'image/', not 'text/', so previous behavior
+    // assumed pre-encoded base64. Now with the explicit 4th arg, without
+    // isPreEncoded=true this gets URL-encoded.
+    expect(uri).toContain('data:image/svg+xml,');
+    expect(uri).toContain(encodeURIComponent(svg));
   });
 
   it('supports undo/redo', () => {
@@ -226,8 +228,8 @@ describe('Data URI Builder deserialize', () => {
   });
 
   it('rejects state with missing textInput field', () => {
-    const partial = { ...defaultState };
-    delete (partial as Partial<DataUriState>).textInput;
+    const { textInput, ...partial } = defaultState;
+    void textInput;
     const result = dataUriTool.deserialize(partial);
     expect(result.success).toBe(false);
   });
