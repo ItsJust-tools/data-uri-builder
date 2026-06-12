@@ -10,7 +10,14 @@
  * - Mixed: cn('a', false, 'b', { c: true, d: false }, ['e', 'f']) → 'a b c e f'
  */
 
-type ClassnameArg = string | number | boolean | null | undefined | ClassnameArg[] | Record<string, boolean | null | undefined>;
+type ClassnameArg =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ClassnameArg[]
+  | Record<string, boolean | null | undefined>;
 
 function resolveClassnameValue(arg: ClassnameArg): string {
   if (typeof arg === 'string' || typeof arg === 'number') return String(arg);

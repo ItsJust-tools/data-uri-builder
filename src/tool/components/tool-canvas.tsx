@@ -53,10 +53,13 @@ interface ToolCanvasProps {
  * and an empty state prompt when no URI has been produced yet.
  */
 export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
-  const mimeLabel = state.selectedMimeType === 'custom' ? state.customMimeType || 'application/octet-stream' : state.selectedMimeType;
+  const mimeLabel =
+    state.selectedMimeType === 'custom'
+      ? state.customMimeType || 'application/octet-stream'
+      : state.selectedMimeType;
   const dataUriLength = state.dataUri.length;
-  const originalSize = state.fileSize > 0 ? state.fileSize : (state.textInput.length || 0);
-  const sizeDiff = originalSize > 0 ? (dataUriLength - originalSize) : 0;
+  const originalSize = state.fileSize > 0 ? state.fileSize : state.textInput.length || 0;
+  const sizeDiff = originalSize > 0 ? dataUriLength - originalSize : 0;
   const overheadRatio =
     originalSize > 0 ? ((dataUriLength / originalSize) * 100 - 100).toFixed(1) : '0';
   const sizeLabel = sizeDiff <= 0 ? 'saved' : 'overhead';
@@ -74,13 +77,19 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
           <div className="datauri-header">
             <h2 className="datauri-title">Generated Data URI</h2>
             <div className="datauri-stats">
-              <span className="stat-badge stat-badge-size" title={`${dataUriLength.toLocaleString()} characters`}>
+              <span
+                className="stat-badge stat-badge-size"
+                title={`${dataUriLength.toLocaleString()} characters`}
+              >
                 {dataUriLength.toLocaleString()} chars
               </span>
               {originalSize > 0 && (
-                <span className={`stat-badge stat-badge-${sizeLabel}`} title={`Original: ${originalSize.toLocaleString()} chars → URI: ${dataUriLength.toLocaleString()} chars`}>
-                  {sizeDiff <= 0 ? '' : '+'}{overheadRatio}%
-                  {' '}{sizeLabel}
+                <span
+                  className={`stat-badge stat-badge-${sizeLabel}`}
+                  title={`Original: ${originalSize.toLocaleString()} chars → URI: ${dataUriLength.toLocaleString()} chars`}
+                >
+                  {sizeDiff <= 0 ? '' : '+'}
+                  {overheadRatio}% {sizeLabel}
                   <span className="stat-badge-detail">
                     {' '}
                     ({originalSize.toLocaleString()} → {dataUriLength.toLocaleString()} chars)

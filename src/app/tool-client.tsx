@@ -498,14 +498,11 @@ export default function ToolClient() {
     <div className="datauri-canvas-wrapper">
       <ToolCanvas canvasRef={canvasRef} state={tool.state.data} onCopyUri={handleCopyUri} />
       {isDragOver && (
-        <div
-          className="drop-overlay"
-          role="status"
-          aria-live="polite"
-          aria-label="Drop file here"
-        >
+        <div className="drop-overlay" role="status" aria-live="polite" aria-label="Drop file here">
           <div className="drop-overlay-content">
-            <span className="drop-overlay-icon" aria-hidden="true">📁</span>
+            <span className="drop-overlay-icon" aria-hidden="true">
+              📁
+            </span>
             <span className="drop-overlay-text">Drop file anywhere to convert</span>
           </div>
         </div>

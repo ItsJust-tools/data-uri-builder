@@ -25,13 +25,13 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 
 ## Keyboard Shortcuts
 
-| Shortcut                   | Action                          |
-| -------------------------- | ------------------------------- |
-| `Ctrl+Shift+C`             | Copy data URI to clipboard      |
-| `Ctrl+Shift+V`             | Paste text from clipboard       |
-| `Ctrl+Shift+E`             | Export tool state in all formats |
-| `Delete`/`Backspace`       | Clear all input and generated URI (when not focused in an input) |
-| `Escape`                   | Close sidebar panel             |
+| Shortcut             | Action                                                           |
+| -------------------- | ---------------------------------------------------------------- |
+| `Ctrl+Shift+C`       | Copy data URI to clipboard                                       |
+| `Ctrl+Shift+V`       | Paste text from clipboard                                        |
+| `Ctrl+Shift+E`       | Export tool state in all formats                                 |
+| `Delete`/`Backspace` | Clear all input and generated URI (when not focused in an input) |
+| `Escape`             | Close sidebar panel                                              |
 
 ## How to Use
 
