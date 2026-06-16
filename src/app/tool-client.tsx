@@ -141,6 +141,7 @@ export default function ToolClient() {
       ttf: 'font/ttf',
       woff2: 'font/woff2',
       woff: 'font/woff',
+      otf: 'font/otf',
       mp3: 'audio/mpeg',
       ogg: 'audio/ogg',
       wav: 'audio/wav',
@@ -276,11 +277,14 @@ export default function ToolClient() {
    * Resets the tool state to its initial values.
    * Also resets the global drag-and-drop overlay state so a subsequent
    * drag isn't incorrectly shown after clearing.
+   * Resets the shared-state-loading flag so a new shared URL can be loaded
+   * after clearing.
    */
   const handleClear = useCallback(() => {
     setToolData(dataUriTool.initialState);
     dragCounter.current = 0;
     setIsDragOver(false);
+    hasLoadedSharedState.current = false;
   }, [setToolData]);
 
   /**
@@ -315,20 +319,46 @@ export default function ToolClient() {
   }, [tool.state.data.dataUri, showToast]);
 
   /**
-   * Reads text from the clipboard and populates the text input field.
-   * Automatically switches to text input mode.
+   * Reads text or image from the clipboard and populates the appropriate input.
+   * - If the clipboard contains text, it populates the text input and switches to text mode.
+   * - If the clipboard contains an image, it creates a File from the image blob and
+   *   switches to file mode, enabling instant data URI generation for pasted images.
+   * - Automatically switches to the appropriate input mode.
    */
   const handlePasteFromClipboard = useCallback(async () => {
     try {
+      // Try reading text first (most common case)
       const text = await navigator.clipboard.readText();
       if (text) {
         setToolData((prev) => ({ ...prev, textInput: text, inputMode: 'text' }));
         showToast('Pasted from clipboard', 'success');
+        return;
       }
     } catch {
-      showToast('Could not read from clipboard', 'error');
+      // Text read failed; try image
     }
-  }, [setToolData, showToast]);
+
+    // Try reading image from clipboard
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imageType = item.types.find((t) => t.startsWith('image/'));
+        if (imageType) {
+          const blob = await item.getType(imageType);
+          const file = new File([blob], `clipboard.${imageType.split('/')[1] || 'png'}`, {
+            type: imageType,
+          });
+          handleFileUpload(file);
+          showToast('Image pasted from clipboard', 'success');
+          return;
+        }
+      }
+    } catch {
+      // Image read failed too
+    }
+
+    showToast('Could not read from clipboard', 'error');
+  }, [setToolData, showToast, handleFileUpload]);
 
   // Keyboard shortcuts: Ctrl+Shift+C (copy), Ctrl+Shift+V (paste), Ctrl+Shift+E (export via config)
   useEffect(() => {

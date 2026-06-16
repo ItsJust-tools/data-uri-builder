@@ -23,11 +23,6 @@ function extensionFromMime(mimeType: string): string {
     'font/woff2': 'woff2',
     'font/woff': 'woff',
     'font/ttf': 'ttf',
-    'audio/mpeg': 'mp3',
-    'audio/ogg': 'ogg',
-    'audio/wav': 'wav',
-    'video/mp4': 'mp4',
-    'video/webm': 'webm',
     'font/otf': 'otf',
     'application/octet-stream': 'bin',
   } as const;

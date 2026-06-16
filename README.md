@@ -19,6 +19,7 @@ Convert any file or text into a data URI — paste, upload, or type to get a `da
 - **Preview** — open the data URI in a new tab to see the result
 - **Size Statistics** — shows character count, encoding overhead/savings ratio, and original vs. encoded size comparison
 - **Keyboard Friendly** — full keyboard navigation for all controls
+- **Clipboard Paste** — paste text or images directly from clipboard with `Ctrl+Shift+V`
 - **Dark Mode** — respects your system preference
 - **High Contrast Support** — accessible in high-contrast mode
 - **No Server** — everything runs in your browser, nothing is uploaded

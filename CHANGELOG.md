@@ -4,6 +4,8 @@
 
 ### Added
 
+- **Image paste from clipboard**: `Ctrl+Shift+V` now also handles pasting images from the clipboard, automatically switching to file mode and detecting the MIME type
+- **Clear resets shared-state flag**: Clearing the tool state now also resets the shared-state-loading flag so a new shared URL can be loaded after clearing
 - **Keyboard shortcuts in README**: Added keyboard shortcuts table documenting `Ctrl+Shift+C`, `Ctrl+Shift+V`, `Delete`/`Backspace`, `Tab`, and `Escape` shortcuts
 - **Title attributes on stat badges**: Added tooltip titles to character count and overhead badges for additional context on hover
 - **Title attribute on output textarea**: Shows data URI character count on hover
@@ -16,10 +18,14 @@
 
 ### Fixed
 
+- **Missing `font/otf` extension mapping**: Added `font/otf` → `.otf` to the download extension map in `tool-canvas.tsx`
+- **Missing `otf` MIME detection**: Added `otf` → `font/otf` to the file extension MIME type map in `tool-client.tsx`
 - **Parse error in sidebar JSX**: Removed stray closing braces that caused a build failure in the tool-sidebar component
 
 ### Docs
 
+- **Fix misleading `buildDataUri` JSDoc**: Updated the documentation to accurately describe the actual behavior when `isBase64` is false
+- **Add Clipboard Paste to README features**: Documented the new image paste capability
 - **Expand README**: Added keyboard shortcuts table, expanded Features with size statistics, expanded Limitations with custom MIME type guidance
 
 ## [1.1.0] — 2026-06-03

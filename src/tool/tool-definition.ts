@@ -40,9 +40,10 @@ function isDataUriState(value: unknown): value is DataUriState {
  * - When `isBase64` is true and `isPreEncoded` is true: the content is already
  *   base64 (e.g. from a file upload via FileReader). `;base64` is appended but
  *   the content is passed through as-is.
- * - When `isBase64` is false: content is URL-encoded. The MIME type determines
- *   whether the resulting URI uses `;base64` or not — text types are plain URI
- *   encoded, non-text types get `;base64` for compatibility.
+ * - When `isBase64` is false: content is URL-encoded. The resulting URI
+ *   uses the format `data:{mimeType},{encodedContent}` without a `;base64`
+ *   suffix, regardless of MIME type. For binary or non-text content, enable
+ *   base64 encoding or pass `isPreEncoded=true` to produce a valid data URI.
  *
  * @param mimeType - MIME type string (e.g. "text/plain", "image/png")
  * @param content - Raw content string to encode
