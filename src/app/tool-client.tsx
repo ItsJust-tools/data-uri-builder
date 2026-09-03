@@ -13,6 +13,7 @@ import {
   ToolSidebar,
 } from '@/tool';
 import type { InputMode, DataUriType, DataUriState } from '@/tool';
+import { copyTextToClipboard } from '@/lib/clipboard';
 
 /**
  * Generates a data URI string from the current tool state.
@@ -297,24 +298,14 @@ export default function ToolClient() {
       showToast('Nothing to copy — generate a data URI first', 'error');
       return;
     }
-    try {
-      await navigator.clipboard.writeText(tool.state.data.dataUri);
+    // Uses the async Clipboard API with a graceful fallback to
+    // document.execCommand('copy') for insecure origins and permission
+    // rejections (see @/lib/clipboard).
+    const copied = await copyTextToClipboard(tool.state.data.dataUri);
+    if (copied) {
       showToast('Data URI copied to clipboard', 'success');
-    } catch {
-      // Fallback for older browsers or insecure contexts
-      try {
-        const textarea = document.createElement('textarea');
-        textarea.value = tool.state.data.dataUri;
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showToast('Data URI copied to clipboard', 'success');
-      } catch {
-        showToast('Failed to copy — your browser may not support clipboard access', 'error');
-      }
+    } else {
+      showToast('Failed to copy — your browser may not support clipboard access', 'error');
     }
   }, [tool.state.data.dataUri, showToast]);
 
@@ -485,7 +476,8 @@ export default function ToolClient() {
           if (error instanceof Error && error.name === 'AbortError') return;
         }
       }
-      await navigator.clipboard.writeText(shareUrl);
+      const copied = await copyTextToClipboard(shareUrl);
+      if (!copied) throw new Error('Failed to copy share URL to clipboard');
       showToast('Share URL copied to clipboard', 'success');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create share URL';
