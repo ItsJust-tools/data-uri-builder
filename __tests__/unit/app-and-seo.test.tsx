@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import manifest from '@/app/manifest';
 import robots from '@/app/robots';
 import sitemap from '@/app/sitemap';
@@ -63,6 +65,28 @@ describe('app and seo', () => {
     expect(man.name).toBe(templateMetadata.appName);
     expect(rob.sitemap).toBe('http://localhost:3000/sitemap.xml');
     expect(sm[0]?.url).toBe('http://localhost:3000');
+  });
+
+  it('declares a maskable icon purpose for PWA launchers', () => {
+    const icons = manifest().icons ?? [];
+    const maskable = icons.filter((icon) => icon.purpose === 'maskable');
+
+    expect(maskable.length).toBeGreaterThan(0);
+    expect(maskable.map((icon) => icon.sizes)).toEqual(
+      expect.arrayContaining(['192x192', '512x512'])
+    );
+    for (const icon of maskable) {
+      expect(icon.type).toBe('image/png');
+      expect(existsSync(join(process.cwd(), 'public', icon.src as string))).toBe(true);
+    }
+  });
+
+  it('keeps the any-purpose svg icon alongside maskable ones', () => {
+    const icons = manifest().icons ?? [];
+    const scalable = icons.find((icon) => icon.type === 'image/svg+xml');
+
+    expect(scalable?.src).toBe(templateMetadata.iconPath);
+    expect(scalable?.purpose).toBe('any');
   });
 
   it('renders json-ld script safely', () => {
