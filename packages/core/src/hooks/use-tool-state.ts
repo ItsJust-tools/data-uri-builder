@@ -52,6 +52,9 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
   );
   const historyPrefix = opts.historyNamespace ?? storageNamespace;
   const [data, setDataInternal] = useState<T>(initial);
+  // Mirror of `data` for synchronous reads. State updaters must stay pure, so
+  // history bookkeeping happens here instead of inside setDataInternal.
+  const dataRef = useRef<T>(initial);
   const historyRef = useRef<T[]>([initial]);
   const futureRef = useRef<T[]>([]);
   const [savedData, setSavedData] = useState<T>(initial);
@@ -80,6 +83,7 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
           historyRef.current = parsed.history;
           futureRef.current = parsed.future ?? [];
           const current = historyRef.current[historyRef.current.length - 1]!;
+          dataRef.current = current;
           setDataInternal(current);
           setSavedData(current);
           setCanUndo(historyRef.current.length > 1);
@@ -90,6 +94,7 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
       // Fallback: load from storage manager if no history exists
       const stored = storage.loadEntry<T>(opts.key, opts.version);
       if (stored.status === 'ok' && stored.data !== null) {
+        dataRef.current = stored.data;
         setDataInternal(stored.data);
         setSavedData(stored.data);
         historyRef.current = [stored.data];
@@ -187,14 +192,17 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
 
   const setData = useCallback(
     (updater: T | ((prev: T) => T)) => {
-      setDataInternal((prev) => {
-        const next = typeof updater === 'function' ? (updater as (prev: T) => T)(prev) : updater;
-        historyRef.current = [...historyRef.current, next].slice(-maxHistory);
-        futureRef.current = [];
-        setCanUndo(historyRef.current.length > 1);
-        setCanRedo(false);
-        return next;
-      });
+      const prev = dataRef.current;
+      const next = typeof updater === 'function' ? (updater as (prev: T) => T)(prev) : updater;
+      // No-op updates (e.g. clearing an already-empty error) must not create
+      // history entries, otherwise the first undo appears to do nothing.
+      if (next === prev) return;
+      dataRef.current = next;
+      historyRef.current = [...historyRef.current, next].slice(-maxHistory);
+      futureRef.current = [];
+      setCanUndo(historyRef.current.length > 1);
+      setCanRedo(false);
+      setDataInternal(next);
     },
     [maxHistory]
   );
@@ -210,6 +218,7 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
     futureRef.current = nextFuture;
     const prev = nextHistory[nextHistory.length - 1];
     if (prev === undefined) return;
+    dataRef.current = prev;
     setDataInternal(prev);
     setCanUndo(nextHistory.length > 1);
     setCanRedo(nextFuture.length > 0);
@@ -224,12 +233,14 @@ export function useToolState<T>(initial: T, options: Partial<AutoSaveOptions> = 
     const nextHistory = [...historyRef.current, next];
     futureRef.current = nextFuture;
     historyRef.current = nextHistory;
+    dataRef.current = next;
     setDataInternal(next);
     setCanUndo(nextHistory.length > 1);
     setCanRedo(nextFuture.length > 0);
   }, []);
 
   const clearHistory = useCallback(() => {
+    dataRef.current = data;
     historyRef.current = [data];
     futureRef.current = [];
     setSavedData(data);

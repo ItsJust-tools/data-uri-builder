@@ -132,7 +132,7 @@ describe('copyWithExecCommand', () => {
     expect(appendSpy).toHaveBeenCalledTimes(1);
     expect(removeSpy).toHaveBeenCalledTimes(1);
 
-    const textarea = appendSpy.mock.calls[0][0] as HTMLTextAreaElement;
+    const textarea = appendSpy.mock.calls[0]?.[0] as HTMLTextAreaElement;
     expect(textarea.tagName).toBe('TEXTAREA');
     expect(textarea.value).toBe('data:text/plain,hi');
     expect(textarea.style.opacity).toBe('0');

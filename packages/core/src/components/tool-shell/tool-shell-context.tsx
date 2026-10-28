@@ -32,6 +32,8 @@ export interface ToolbarActions {
   onBrandCancel?: () => void;
   /** Open the keyboard shortcuts overlay. */
   onShowShortcuts?: () => void;
+  /** Toggle between light and dark appearance (Ctrl/Cmd+D). */
+  onToggleTheme?: () => void;
 }
 
 export interface ShellContextValue {

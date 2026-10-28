@@ -64,6 +64,7 @@ export function useTool<TState>(
     }
   }
 
+  const { toast } = useToast();
   const state = useToolState<TState>(tool.initialState, { key: canonicalId });
   const { exportTo, abortExport, supportedFormats, isExporting } = useExport(
     canvasRef,
@@ -78,13 +79,17 @@ export function useTool<TState>(
         const deserialized = tool.deserialize(result.data);
         if (deserialized.success) {
           state.setData(deserialized.data);
+          toast(t('importSuccess'), 'success');
         } else {
           toast(deserialized.error, 'error');
         }
       }
     },
+    // Surface unreadable/unsupported files instead of failing silently.
+    onImportError: (error) => {
+      toast(error || t('importFailed'), 'error');
+    },
   });
-  const { toast } = useToast();
 
   const handleExport = useCallback(
     async (format: ExportFormat) => {

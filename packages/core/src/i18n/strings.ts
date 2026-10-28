@@ -31,6 +31,7 @@ export const strings = {
     exportFailed: 'Export failed',
     exportSuccess: (format: string) => `Exported as .${format}`,
     importFailed: 'Import failed',
+    importSuccess: 'Imported state',
     dropFileToImport: 'Drop file to import',
     options: 'Options',
     switchToDarkMode: 'Switch to dark mode',

@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Full Playwright E2E suite**: Core user workflows now have E2E coverage — state persistence across reload (including shared `?state=` URLs and corrupt-storage recovery), keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+S`, `Ctrl+B`, `Ctrl+D`, `Ctrl+Shift+C`, `?`, `Delete`), export payload verification (JSON round-trip plus PNG signature), import and drag-and-drop flows, and dark/light theme persistence
 - **Image paste from clipboard**: `Ctrl+Shift+V` now also handles pasting images from the clipboard, automatically switching to file mode and detecting the MIME type
 - **Clear resets shared-state flag**: Clearing the tool state now also resets the shared-state-loading flag so a new shared URL can be loaded after clearing
 - **Keyboard shortcuts in README**: Added keyboard shortcuts table documenting `Ctrl+Shift+C`, `Ctrl+Shift+V`, `Delete`/`Backspace`, `Tab`, and `Escape` shortcuts
@@ -18,6 +19,12 @@
 
 ### Fixed
 
+- **Silent import failures**: Unreadable or rejected import files now raise an error toast instead of failing without feedback, and successful imports confirm with an "Imported state" toast
+- **Redo via `Ctrl+Shift+Z` was unreachable**: The shortcut handler matched only lowercase `z`, but Shift produces `"Z"`, so redo never dispatched
+- **Undo blocked native text undo in inputs**: `Ctrl+Z`/`Ctrl+Y` are now left to the browser while focus is inside an editable field, and no longer hijack caret-level undo
+- **First undo appeared to do nothing**: `setData` recorded a history entry even when the update produced an identical state (e.g. clearing an already-empty error), so undo needed two presses; no-op updates no longer touch history, and the state updater stays pure under React StrictMode
+- **Advertised `Ctrl+D` did nothing**: Dark-mode shortcut listed in the shortcut overlay but never implemented; it now toggles the theme
+- **Bare `?` did not open shortcuts**: The cheatsheet claimed `?` toggles the overlay, but only `Ctrl+?` worked
 - **Missing `font/otf` extension mapping**: Added `font/otf` → `.otf` to the download extension map in `tool-canvas.tsx`
 - **Missing `otf` MIME detection**: Added `otf` → `font/otf` to the file extension MIME type map in `tool-client.tsx`
 - **Parse error in sidebar JSX**: Removed stray closing braces that caused a build failure in the tool-sidebar component

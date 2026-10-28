@@ -12,6 +12,7 @@ import { LoadingSkeleton } from './tool-shell-loading';
 import { useKeyboardShortcuts, buildDefaultShortcutGroups } from './tool-shell-shortcuts';
 import { ErrorBoundary } from '../error-boundary/error-boundary';
 import { usePlugins } from '../../hooks/use-plugins';
+import { useTheme } from '../theme-provider/theme-provider';
 import { t } from '../../i18n/strings';
 
 export { type ToolbarActions } from './tool-shell-context';
@@ -89,6 +90,10 @@ export function ToolShell({
   }, [isControlled, onSidebarChange, sidebarOpen]);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+  const toggleTheme = useCallback(() => {
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+  }, [resolvedTheme, setTheme]);
 
   const openShortcuts = useCallback(() => setShortcutsOpen(true), []);
 
@@ -105,8 +110,9 @@ export function ToolShell({
       ...actions,
       onToggleSidebar: toggleSidebar,
       onShowShortcuts: openShortcuts,
+      onToggleTheme: config.features.darkMode ? toggleTheme : undefined,
     }),
-    [actions, toggleSidebar, openShortcuts]
+    [actions, toggleSidebar, openShortcuts, config.features.darkMode, toggleTheme]
   );
 
   useKeyboardShortcuts(shellActions, openShortcuts);

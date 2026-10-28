@@ -99,6 +99,77 @@ describe('useKeyboardShortcuts', () => {
     expect(onRedo).toHaveBeenCalled();
   });
 
+  it('calls onRedo on Ctrl+Shift+Z with an uppercase key value', () => {
+    const onRedo = vi.fn();
+    renderHook(() => useKeyboardShortcuts({ onRedo }, vi.fn()));
+
+    const handler = vi
+      .mocked(window.addEventListener)
+      .mock.calls.find(([event]) => event === 'keydown')?.[1] as EventListener;
+
+    // Browsers report "Z" (not "z") when Shift is held.
+    handler(new KeyboardEvent('keydown', { key: 'Z', shiftKey: true, ctrlKey: true }));
+    expect(onRedo).toHaveBeenCalled();
+  });
+
+  it('does not undo while the event target is an editable field', () => {
+    const onUndo = vi.fn();
+    renderHook(() => useKeyboardShortcuts({ onUndo }, vi.fn()));
+
+    const textarea = document.createElement('textarea');
+    document.body.appendChild(textarea);
+    // Bubbles to the window listener with the textarea as the event target.
+    textarea.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true })
+    );
+    expect(onUndo).not.toHaveBeenCalled();
+
+    // Outside an editable field the shortcut fires.
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true })
+    );
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    textarea.remove();
+  });
+
+  it('calls onToggleTheme on Ctrl+D', () => {
+    const onToggleTheme = vi.fn();
+    renderHook(() => useKeyboardShortcuts({ onToggleTheme }, vi.fn()));
+
+    const handler = vi
+      .mocked(window.addEventListener)
+      .mock.calls.find(([event]) => event === 'keydown')?.[1] as EventListener;
+
+    handler(new KeyboardEvent('keydown', { key: 'd', ctrlKey: true }));
+    expect(onToggleTheme).toHaveBeenCalled();
+  });
+
+  it('exports the first supported format on Ctrl+E', () => {
+    const onExport = vi.fn();
+    renderHook(() =>
+      useKeyboardShortcuts({ onExport, supportedFormats: ['json', 'png'] }, vi.fn())
+    );
+
+    const handler = vi
+      .mocked(window.addEventListener)
+      .mock.calls.find(([event]) => event === 'keydown')?.[1] as EventListener;
+
+    handler(new KeyboardEvent('keydown', { key: 'e', ctrlKey: true }));
+    expect(onExport).toHaveBeenCalledWith('json');
+  });
+
+  it('opens the shortcuts overlay on a bare "?" outside inputs', () => {
+    const onShowShortcuts = vi.fn();
+    renderHook(() => useKeyboardShortcuts({}, onShowShortcuts));
+
+    const handler = vi
+      .mocked(window.addEventListener)
+      .mock.calls.find(([event]) => event === 'keydown')?.[1] as EventListener;
+
+    handler(new KeyboardEvent('keydown', { key: '?' }));
+    expect(onShowShortcuts).toHaveBeenCalled();
+  });
+
   it('calls onRedo on Ctrl+Y', () => {
     const onRedo = vi.fn();
     renderHook(() => useKeyboardShortcuts({ onRedo }, vi.fn()));
