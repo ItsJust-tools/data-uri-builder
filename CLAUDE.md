@@ -286,6 +286,7 @@ These files are part of the template infrastructure. They must not be edited whe
 | `packages/core/package.json`, `tsconfig.json`, `tsup.config.ts`                                                            | Core build configs.                                                                      |
 | `Dockerfile`, `.github/**/*`, `.husky/**/*`                                                                                | DevOps and CI/CD.                                                                        |
 | `public/apple-touch-icon.svg`, `icon-192.svg`, `icon-512.svg`                                                              | PWA icons.                                                                               |
+| `public/maskable-icon-192.png`, `maskable-icon-512.png`                                                                    | Full-bleed maskable PWA icons (`purpose: "maskable"`), built by `scripts/generate-maskable-icons.mjs`. |
 
 ### Editable (Tool Customization)
 

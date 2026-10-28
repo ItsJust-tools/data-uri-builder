@@ -15,7 +15,14 @@ export default function manifest(): MetadataRoute.Manifest {
         src: templateMetadata.iconPath,
         sizes: 'any',
         type: 'image/svg+xml',
+        purpose: 'any',
       },
+      ...templateMetadata.maskableIcons.map((icon) => ({
+        src: icon.src,
+        sizes: icon.sizes,
+        type: 'image/png',
+        purpose: 'maskable' as const,
+      })),
     ],
   };
 }

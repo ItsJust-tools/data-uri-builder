@@ -30,6 +30,7 @@
     "lint": "mkdir -p test-results && eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "icons:maskable": "node scripts/generate-maskable-icons.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
