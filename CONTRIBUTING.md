@@ -58,6 +58,24 @@ npm test -- --coverage
 
 Run `npm test -- --coverage` to see the per-package breakdown.
 
+### E2E Coverage
+
+The Playwright suite lives in `__tests__/e2e/` and runs against the dev server
+configured in `playwright.config.ts` (Chromium and Mobile Chrome by default).
+
+- `utils.ts` — shared helpers (`openSidebar`, `fillTextarea`, `fillInput`, `waitForHydration`, `waitForAutoSave`)
+- `tool.spec.ts` — rendering, input modes, MIME/base64 handling, copy and clear
+- `workflows.spec.ts` — state persistence, keyboard shortcuts, theme persistence
+- `export-import.spec.ts` — export payloads, import validation, drag-and-drop
+
+Sidebar controls live inside a scrollable container that can overflow the mobile
+viewport, so prefer the `clickInSidebar`/`fillInput` helpers over `click`/`fill`.
+Call `waitForHydration(page)` before any keyboard shortcut assertion: the shell
+binds its listeners on hydration, and the theme toggle is `disabled` until then.
+
+Set `PLAYWRIGHT_CROSS_BROWSER=1` to run the full browser matrix (Firefox, WebKit,
+Mobile Safari).
+
 ### Snapshot Stability
 
 Visual regression tests use Playwright screenshots. To keep snapshots stable:

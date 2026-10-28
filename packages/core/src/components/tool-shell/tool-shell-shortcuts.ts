@@ -14,6 +14,20 @@ export function useKeyboardShortcuts(actions: ToolbarActions, onShowShortcuts: (
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey;
+      const target = e.target as HTMLElement | null;
+      const isTyping =
+        !!target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable);
+
+      // Bare "?" opens the shortcut cheatsheet, matching the toolbar tooltip.
+      if (e.key === '?' && !mod && !isTyping) {
+        e.preventDefault();
+        onShowShortcuts();
+        return;
+      }
 
       if (mod) {
         if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
@@ -21,17 +35,21 @@ export function useKeyboardShortcuts(actions: ToolbarActions, onShowShortcuts: (
           onShowShortcuts();
           return;
         }
-        switch (e.key) {
+        // Shift changes `event.key` to its uppercase form (e.g. "Z"), so compare
+        // case-insensitively to keep Ctrl+Shift+Z working as redo.
+        switch (e.key.toLowerCase()) {
           case 'z':
+            // Inside an editable field the browser's native text undo must win.
+            if (isTyping) break;
+            e.preventDefault();
             if (e.shiftKey) {
-              e.preventDefault();
               actions.onRedo?.();
             } else {
-              e.preventDefault();
               actions.onUndo?.();
             }
             break;
           case 'y':
+            if (isTyping) break;
             e.preventDefault();
             actions.onRedo?.();
             break;
@@ -41,6 +59,17 @@ export function useKeyboardShortcuts(actions: ToolbarActions, onShowShortcuts: (
           case 'b':
             e.preventDefault();
             actions.onToggleSidebar?.();
+            break;
+          case 'd':
+            e.preventDefault();
+            actions.onToggleTheme?.();
+            break;
+          case 'e':
+            // Export shortcut: hand control to the tool's default export format.
+            if (actions.onExport) {
+              e.preventDefault();
+              actions.onExport(actions.supportedFormats?.[0] ?? 'json');
+            }
             break;
         }
         return;

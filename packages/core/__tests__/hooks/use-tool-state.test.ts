@@ -144,6 +144,45 @@ describe('useToolState', () => {
     expect(JSON.parse(saved!).data).toBe('changed');
   });
 
+  it('ignores no-op updates so the first undo reverts a real change', () => {
+    const { result } = renderHook(() => useToolState({ text: '' }, { key: 'test-noop' }));
+
+    act(() => result.current.setData((prev) => (prev.text === '' ? prev : { text: '' })));
+    expect(result.current.canUndo).toBe(false);
+
+    act(() => result.current.setData({ text: 'typed' }));
+    act(() => result.current.undo());
+    expect(result.current.data).toEqual({ text: '' });
+  });
+
+  it('records exactly one history entry per state change', () => {
+    const { result } = renderHook(() => useToolState('start', { key: 'test-history-count' }));
+
+    act(() => result.current.setData('one'));
+    act(() => result.current.undo());
+    expect(result.current.data).toBe('start');
+    expect(result.current.canUndo).toBe(false);
+
+    act(() => result.current.redo());
+    expect(result.current.data).toBe('one');
+    expect(result.current.canRedo).toBe(false);
+  });
+
+  it('keeps setData results visible immediately after undo/redo', () => {
+    const { result } = renderHook(() => useToolState('a', { key: 'test-sequential' }));
+
+    act(() => result.current.setData('b'));
+    act(() => result.current.setData('c'));
+    expect(result.current.data).toBe('c');
+
+    act(() => result.current.undo());
+    expect(result.current.data).toBe('b');
+    act(() => result.current.undo());
+    expect(result.current.data).toBe('a');
+    act(() => result.current.redo());
+    expect(result.current.data).toBe('b');
+  });
+
   it('gracefully handles localStorage quota exceeded', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key: string) => {
