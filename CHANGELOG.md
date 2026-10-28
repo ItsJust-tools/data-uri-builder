@@ -4,6 +4,7 @@
 
 ### Added
 
+- **Docker container health check**: The runtime stage now declares a `HEALTHCHECK` that polls `http://127.0.0.1:3000/` every 30s (`--start-period=10s`, 3 retries), so orchestrators can detect a wedged server instead of reporting the container as healthy. The probe targets the IPv4 loopback because the server binds `HOSTNAME=0.0.0.0` while BusyBox `wget` resolves `localhost` to `::1` without falling back
 - **Full Playwright E2E suite**: Core user workflows now have E2E coverage — state persistence across reload (including shared `?state=` URLs and corrupt-storage recovery), keyboard shortcuts (`Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`, `Ctrl+S`, `Ctrl+B`, `Ctrl+D`, `Ctrl+Shift+C`, `?`, `Delete`), export payload verification (JSON round-trip plus PNG signature), import and drag-and-drop flows, and dark/light theme persistence
 - **Image paste from clipboard**: `Ctrl+Shift+V` now also handles pasting images from the clipboard, automatically switching to file mode and detecting the MIME type
 - **Clear resets shared-state flag**: Clearing the tool state now also resets the shared-state-loading flag so a new shared URL can be loaded after clearing
