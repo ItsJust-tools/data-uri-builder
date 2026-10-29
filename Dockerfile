@@ -18,9 +18,23 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+
+# Run as a dedicated unprivileged user instead of root. The uid/gid are fixed
+# so bind mounts and volume permissions stay predictable across environments.
+RUN addgroup --system --gid 1001 nodejs \
+  && adduser --system --uid 1001 nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# The standalone server writes its image/ISR cache under .next at runtime, so
+# that directory has to be owned by the unprivileged user.
+RUN mkdir -p .next/cache \
+  && chown -R nextjs:nodejs .next
+
+USER nextjs
+
 EXPOSE 3000
 
 # Fail the container health check if the standalone server stops answering.

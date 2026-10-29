@@ -40,4 +40,36 @@ describe('Dockerfile', () => {
     expect(exposeIndex).toBeGreaterThanOrEqual(0);
     expect(healthcheckIndex).toBeGreaterThan(exposeIndex);
   });
+
+  it('creates a dedicated non-root user and group', () => {
+    expect(dockerfile).toMatch(/addgroup\s+--system\s+--gid\s+1001\s+nodejs/);
+    expect(dockerfile).toMatch(/adduser\s+--system\s+--uid\s+1001\s+nextjs/);
+  });
+
+  it('switches the runtime container to the non-root user', () => {
+    const userIndex = lines.findIndex((line) => /^\s*USER\s+nextjs\s*$/i.test(line));
+    expect(userIndex).toBeGreaterThanOrEqual(0);
+
+    // USER must appear after the non-root user is created, and the final CMD
+    // must be reached while still running as that user.
+    const addUserIndex = lines.findIndex((line) =>
+      /adduser\s+--system\s+--uid\s+1001\s+nextjs/.test(line)
+    );
+    expect(addUserIndex).toBeGreaterThanOrEqual(0);
+    expect(userIndex).toBeGreaterThan(addUserIndex);
+
+    const rootUserIndex = lines.findIndex((line) => /^\s*USER\s+(root|0)\s*$/i.test(line));
+    expect(rootUserIndex).toBe(-1);
+  });
+
+  it('does not run the server as root', () => {
+    const runnerStart = lines.findIndex((line) => /^\s*FROM\s+\S+\s+AS\s+runner\s*$/i.test(line));
+    expect(runnerStart).toBeGreaterThanOrEqual(0);
+    const runnerLines = lines.slice(runnerStart);
+    expect(runnerLines.some((line) => /^\s*USER\s+nextjs\s*$/i.test(line))).toBe(true);
+  });
+
+  it('hands runtime paths to the non-root user', () => {
+    expect(dockerfile).toMatch(/--chown=nextjs:nodejs/);
+  });
 });
