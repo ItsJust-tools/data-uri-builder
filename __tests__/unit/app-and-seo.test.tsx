@@ -135,6 +135,7 @@ describe('app and seo', () => {
       fileSize: 0,
       fileBytes: '',
       error: '',
+      optimizeSvg: false,
       urlInput: '',
     };
     expect(dataUriTool.deserialize(validState)).toEqual({
@@ -169,6 +170,7 @@ describe('app and seo', () => {
       fileSize: 0,
       fileBytes: '',
       error: '',
+      optimizeSvg: false,
       urlInput: '',
     };
 
@@ -184,6 +186,7 @@ describe('app and seo', () => {
           onMimeTypeChange={() => {}}
           onCustomMimeChange={() => {}}
           onBase64Toggle={() => {}}
+          onOptimizeSvgToggle={() => {}}
           onGenerateUri={() => {}}
           onClear={() => {}}
         />

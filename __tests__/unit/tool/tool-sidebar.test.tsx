@@ -14,6 +14,7 @@ const baseState: DataUriState = {
   fileSize: 0,
   fileBytes: '',
   error: '',
+  optimizeSvg: false,
   urlInput: '',
 };
 
@@ -26,6 +27,7 @@ function renderSidebar(overrides: Partial<DataUriState> = {}) {
     onMimeTypeChange: vi.fn(),
     onCustomMimeChange: vi.fn(),
     onBase64Toggle: vi.fn(),
+    onOptimizeSvgToggle: vi.fn(),
     onGenerateUri: vi.fn(),
     onClear: vi.fn(),
   };

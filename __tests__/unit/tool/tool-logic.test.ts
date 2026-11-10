@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createMockToolState } from '@itsjust/core/testing';
-import { dataUriTool, buildDataUri } from '@/tool/tool-definition';
+import { dataUriTool, buildDataUri, isSvgMimeType } from '@/tool/tool-definition';
 import type { DataUriState } from '@/tool/types';
 
 const defaultState: DataUriState = {
@@ -14,6 +14,7 @@ const defaultState: DataUriState = {
   fileSize: 0,
   fileBytes: '',
   error: '',
+  optimizeSvg: false,
   urlInput: '',
 };
 
@@ -99,6 +100,42 @@ describe('Data URI Builder logic', () => {
     // isPreEncoded=true this gets URL-encoded.
     expect(uri).toContain('data:image/svg+xml,');
     expect(uri).toContain(encodeURIComponent(svg));
+  });
+
+  it('optimizeSvg builds smaller percent-encoded SVG data URI', () => {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>';
+    const optimized = buildDataUri('image/svg+xml', svg, false, false, true);
+    const base64 = buildDataUri('image/svg+xml', svg, true, false);
+    expect(optimized.startsWith('data:image/svg+xml;utf8,')).toBe(true);
+    expect(optimized.length).toBeLessThan(base64.length);
+  });
+
+  it('optimizeSvg percent-encodes unsafe characters only', () => {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg"><rect fill="#fff" width="10" height="5" /></svg>`;
+    const uri = buildDataUri('image/svg+xml', svg, false, false, true);
+    const payload = uri.slice('data:image/svg+xml;utf8,'.length);
+    expect(payload).toContain('width=%2210%22');
+    expect(payload).toContain('height=%225%22');
+    // '#' and quotes must be percent-encoded for a valid data URI
+    expect(payload).toContain('%23fff');
+    expect(payload).toContain('%22');
+    // xmlns URL stays readable after unescaping safe chars
+    expect(payload).toContain('http://www.w3.org/2000/svg');
+  });
+
+  it('optimizeSvg is ignored for non-SVG MIME types', () => {
+    const content = 'plain text';
+    const uri = buildDataUri('text/plain', content, false, false, true);
+    expect(uri).toBe('data:text/plain,' + encodeURIComponent(content));
+    expect(uri.startsWith('data:image/svg+xml;utf8,')).toBe(false);
+  });
+
+  it('isSvgMimeType matches accepted SVG MIME forms', () => {
+    expect(isSvgMimeType('image/svg+xml')).toBe(true);
+    expect(isSvgMimeType('IMAGE/SVG')).toBe(true);
+    expect(isSvgMimeType('image/svg')).toBe(true);
+    expect(isSvgMimeType('image/svg+gzip')).toBe(false);
+    expect(isSvgMimeType('')).toBe(false);
   });
 
   it('supports undo/redo', () => {

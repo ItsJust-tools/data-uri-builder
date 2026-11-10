@@ -58,7 +58,9 @@ function generateDataUri(state: DataUriState): { uri: string; error: string } {
       // so we pass isBase64=false to avoid double-encoding
       state.inputMode === 'file' ? false : state.isBase64,
       // Content from file upload is pre-encoded as base64 by FileReader
-      state.inputMode === 'file'
+      state.inputMode === 'file',
+      // SVG optimization: percent-encoded UTF-8 URIs for SVG content
+      state.optimizeSvg
     ),
     error: '',
   };
@@ -253,6 +255,18 @@ export default function ToolClient() {
     (isBase64: boolean) => {
       clearError(setToolData);
       setToolData((prev) => ({ ...prev, isBase64 }));
+    },
+    [setToolData]
+  );
+
+  /**
+   * Handles the SVG optimization (URL-encoding) toggle.
+   * Clears any existing error before updating state.
+   */
+  const handleOptimizeSvgToggle = useCallback(
+    (optimizeSvg: boolean) => {
+      clearError(setToolData);
+      setToolData((prev) => ({ ...prev, optimizeSvg }));
     },
     [setToolData]
   );
@@ -513,6 +527,7 @@ export default function ToolClient() {
       onMimeTypeChange={handleMimeTypeChange}
       onCustomMimeChange={handleCustomMimeChange}
       onBase64Toggle={handleBase64Toggle}
+      onOptimizeSvgToggle={handleOptimizeSvgToggle}
       onGenerateUri={handleGenerateUri}
       onClear={handleClear}
     />
