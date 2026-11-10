@@ -1,6 +1,7 @@
 import type { Tool } from '@itsjust/core';
 import toolConfig from './tool.config';
 import type { DataUriState } from './types';
+import { isSvgMimeType, svgToUrlEncodedDataUri } from './types';
 
 /**
  * Checks whether an unknown value is a valid DataUriState object.
@@ -26,6 +27,7 @@ function isDataUriState(value: unknown): value is DataUriState {
     !Number.isNaN(v.fileSize as number) &&
     typeof v.fileBytes === 'string' &&
     typeof v.urlInput === 'string' &&
+    typeof v.optimizeSvg === 'boolean' &&
     typeof v.error === 'string'
   );
 }
@@ -49,14 +51,22 @@ function isDataUriState(value: unknown): value is DataUriState {
  * @param content - Raw content string to encode
  * @param isBase64 - Whether to base64-encode the content
  * @param isPreEncoded - Whether the content is already base64-encoded
+ * @param optimizeSvg - For SVG content, produce a percent-encoded UTF-8 URI
+ *   (`data:image/svg+xml;utf8,...`) which is typically 20-30% smaller than
+ *   base64. When true and the MIME type is SVG, takes precedence over base64.
  * @returns A complete data URI string
  */
 function buildDataUri(
   mimeType: string,
   content: string,
   isBase64: boolean,
-  isPreEncoded = false
+  isPreEncoded = false,
+  optimizeSvg = false
 ): string {
+  // SVG optimization: percent-encoded UTF-8 is smaller than base64 for SVG
+  if (optimizeSvg && isSvgMimeType(mimeType) && !isPreEncoded) {
+    return svgToUrlEncodedDataUri(content);
+  }
   if (isBase64 && !isPreEncoded) {
     // Encode raw content to base64
     let base64: string;
@@ -100,6 +110,7 @@ export const dataUriTool: Tool<DataUriState> = {
     fileSize: 0,
     fileBytes: '',
     error: '',
+    optimizeSvg: false,
     urlInput: '',
   },
   serialize: (state) => JSON.stringify(state, null, 2),
@@ -120,4 +131,4 @@ export const dataUriTool: Tool<DataUriState> = {
   ],
 };
 
-export { buildDataUri };
+export { buildDataUri, isSvgMimeType, svgToUrlEncodedDataUri };

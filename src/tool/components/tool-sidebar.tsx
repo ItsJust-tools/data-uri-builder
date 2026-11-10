@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState, useId, type DragEvent, type KeyboardEvent } from 'react';
 import type { DataUriState, InputMode, DataUriType } from '../types';
-import { DEFAULT_MIME_TYPES } from '../types';
+import { DEFAULT_MIME_TYPES, isSvgMimeType } from '../types';
 
 interface ToolSidebarProps {
   /** Current tool state */
@@ -21,6 +21,8 @@ interface ToolSidebarProps {
   onCustomMimeChange: (mime: string) => void;
   /** Toggle base64 encoding */
   onBase64Toggle: (isBase64: boolean) => void;
+  /** Toggle optimized (percent-encoded) SVG data URIs */
+  onOptimizeSvgToggle: (optimizeSvg: boolean) => void;
   /** Generate the data URI from current inputs */
   onGenerateUri: () => void;
   /** Reset everything to initial state */
@@ -36,6 +38,7 @@ export function ToolSidebar({
   onMimeTypeChange,
   onCustomMimeChange,
   onBase64Toggle,
+  onOptimizeSvgToggle,
   onGenerateUri,
   onClear,
 }: ToolSidebarProps) {
@@ -249,6 +252,23 @@ export function ToolSidebar({
       {/* Encoding Options */}
       <div className="sidebar-section">
         <h3>Encoding</h3>
+        {(() => {
+          const activeMime =
+            state.selectedMimeType === 'custom' ? state.customMimeType : state.selectedMimeType;
+          if (!isSvgMimeType(activeMime)) return null;
+          return (
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={state.optimizeSvg}
+                onChange={(e) => onOptimizeSvgToggle(e.target.checked)}
+                aria-label="Optimize SVG (URL encoded)"
+              />
+              <span>Optimize SVG (URL Encoded)</span>
+            </label>
+          );
+        })()}
+
         <label className="checkbox-label">
           <input
             type="checkbox"

@@ -36,6 +36,8 @@ export interface DataUriState {
   fileSize: number;
   fileBytes: string; // base64 encoded file content for file mode
   error: string;
+  /** Optimize SVG output: use percent-encoded UTF-8 data URIs for SVG content (smaller than base64) */
+  optimizeSvg: boolean;
   urlInput: string;
 }
 
@@ -64,3 +66,32 @@ export const DEFAULT_MIME_TYPES: { label: string; value: DataUriType }[] = [
   { label: 'font/otf', value: 'font/otf' },
   { label: 'Custom…', value: 'custom' },
 ];
+
+/**
+ * Returns true if the given MIME type string denotes SVG content.
+ * Matches "image/svg+xml" and the lenient legacy "image/svg" form.
+ */
+export function isSvgMimeType(mime: string): boolean {
+  const normalized = mime.trim().toLowerCase();
+  return normalized === 'image/svg+xml' || normalized === 'image/svg';
+}
+
+/**
+ * Produces a percent-encoded SVG data URI:
+ * `data:image/svg+xml;utf8,<svg-content>` with characters that break data
+ * URIs (%, #, quotes, newlines, control chars) percent-encoded, per RFC 2397.
+ * Typically 20-30% smaller than the base64 equivalent for SVG payloads.
+ *
+ * @param svgContent - Raw SVG/XML source text
+ * @returns The encoded SVG data URI (without a specific mime prefix validation)
+ */
+export function svgToUrlEncodedDataUri(svgContent: string): string {
+  const encoded = encodeURIComponent(svgContent)
+    .replace(/%20/g, ' ')
+    .replace(/%3D/g, '=')
+    .replace(/%3A/g, ':')
+    .replace(/%2F/g, '/')
+    .replace(/'/g, '%27')
+    .replace(/"/g, '%22');
+  return `data:image/svg+xml;utf8,${encoded}`;
+}

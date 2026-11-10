@@ -14,6 +14,7 @@ const baseState: DataUriState = {
   fileSize: 0,
   fileBytes: '',
   error: '',
+  optimizeSvg: false,
   urlInput: '',
 };
 
