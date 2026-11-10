@@ -7,9 +7,18 @@ interface ToolToolbarProps {
   hasDataUri?: boolean;
   /** Called when the Copy URI button is clicked */
   onCopyUri?: () => void;
+  /** Called when the Copy as CSS button is clicked */
+  onCopyAsCss?: () => void;
+  /** Called when the Copy as HTML button is clicked */
+  onCopyAsHtml?: () => void;
 }
 
-export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps) {
+export function ToolToolbar({
+  hasDataUri = false,
+  onCopyUri,
+  onCopyAsCss,
+  onCopyAsHtml,
+}: ToolToolbarProps) {
   return (
     <div className="datauri-toolbar">
       <Link href="/help" className="toolbar-btn toolbar-help-link" aria-label="Open help page">
@@ -22,6 +31,24 @@ export function ToolToolbar({ hasDataUri = false, onCopyUri }: ToolToolbarProps)
           aria-label="Copy data URI to clipboard"
         >
           Copy URI
+        </button>
+      )}
+      {hasDataUri && onCopyAsCss && (
+        <button
+          className="toolbar-btn toolbar-copy-css-btn"
+          onClick={onCopyAsCss}
+          aria-label="Copy as CSS background-image snippet"
+        >
+          Copy as CSS
+        </button>
+      )}
+      {hasDataUri && onCopyAsHtml && (
+        <button
+          className="toolbar-btn toolbar-copy-html-btn"
+          onClick={onCopyAsHtml}
+          aria-label="Copy as HTML img snippet"
+        >
+          Copy as HTML
         </button>
       )}
       <span className="datauri-toolbar-hint">
