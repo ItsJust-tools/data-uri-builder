@@ -40,6 +40,10 @@ interface ToolCanvasProps {
   canvasRef?: React.RefObject<HTMLDivElement | null>;
   /** Called when user clicks Copy — shows toast feedback in ToolClient */
   onCopyUri?: () => void;
+  /** Called when user clicks Copy as CSS — copies `background-image: url(...)` */
+  onCopyAsCss?: () => void;
+  /** Called when user clicks Copy as HTML — copies `<img src="...">` (or element per MIME) */
+  onCopyAsHtml?: () => void;
 }
 
 /**
@@ -47,7 +51,13 @@ interface ToolCanvasProps {
  * Displays the generated data URI along with size statistics, copy/download/preview actions,
  * and an empty state prompt when no URI has been produced yet.
  */
-export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
+export function ToolCanvas({
+  state,
+  canvasRef,
+  onCopyUri,
+  onCopyAsCss,
+  onCopyAsHtml,
+}: ToolCanvasProps) {
   const mimeLabel =
     state.selectedMimeType === 'custom'
       ? state.customMimeType || 'application/octet-stream'
@@ -117,6 +127,22 @@ export function ToolCanvas({ state, canvasRef, onCopyUri }: ToolCanvasProps) {
               aria-label="Copy data URI to clipboard"
             >
               Copy to Clipboard
+            </button>
+            <button
+              type="button"
+              className="datauri-btn datauri-btn-secondary"
+              onClick={onCopyAsCss}
+              aria-label="Copy as CSS background-image snippet"
+            >
+              Copy as CSS
+            </button>
+            <button
+              type="button"
+              className="datauri-btn datauri-btn-secondary"
+              onClick={onCopyAsHtml}
+              aria-label="Copy as HTML snippet"
+            >
+              Copy as HTML
             </button>
             <a
               href={state.dataUri}

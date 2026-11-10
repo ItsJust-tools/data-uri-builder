@@ -13,6 +13,14 @@ import {
   ToolSidebar,
 } from '@/tool';
 import type { InputMode, DataUriType, DataUriState } from '@/tool';
+import {
+  shouldWarnLargeFile,
+  readFileAsBase64,
+  buildCssSnippet,
+  buildHtmlSnippet,
+  CHUNKED_ENCODING_THRESHOLD_BYTES,
+  formatBytes,
+} from '@/tool/encoding/large-file';
 import { copyTextToClipboard } from '@/lib/clipboard';
 
 /**
@@ -186,12 +194,18 @@ export default function ToolClient() {
   const handleFileUpload = useCallback(
     (file: File) => {
       clearError(setToolData);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result;
-        if (typeof result === 'string') {
-          // result is a data: URL; extract base64
-          const base64 = result.split(',')[1] || '';
+      if (shouldWarnLargeFile(file.size)) {
+        const workerNote =
+          file.size > CHUNKED_ENCODING_THRESHOLD_BYTES
+            ? ' Encoding runs in the background to keep the page responsive.'
+            : '';
+        showToast(
+          `⚠️ Large file (${formatBytes(file.size)}). Encoding may take a moment and use significant memory.${workerNote}`,
+          'error'
+        );
+      }
+      readFileAsBase64(file)
+        .then(({ base64 }) => {
           // Auto-detect MIME type from file
           const detectedMime = mimeTypeForFile(file.name);
           setToolData((prev) => ({
@@ -204,11 +218,12 @@ export default function ToolClient() {
             // Don't force isBase64: the generate function already handles
             // file mode content as pre-encoded base64 regardless of this flag
           }));
-        }
-      };
-      reader.readAsDataURL(file);
+        })
+        .catch(() => {
+          showToast('Failed to read file', 'error');
+        });
     },
-    [setToolData, mimeTypeForFile]
+    [setToolData, mimeTypeForFile, showToast]
   );
 
   /**
@@ -322,6 +337,49 @@ export default function ToolClient() {
       showToast('Failed to copy — your browser may not support clipboard access', 'error');
     }
   }, [tool.state.data.dataUri, showToast]);
+
+  /**
+   * Copies the generated data URI as a CSS snippet (`background-image: url(...)`).
+   */
+  const handleCopyAsCss = useCallback(async () => {
+    if (!tool.state.data.dataUri) {
+      showToast('Nothing to copy — generate a data URI first', 'error');
+      return;
+    }
+    const copied = await copyTextToClipboard(buildCssSnippet(tool.state.data.dataUri));
+    showToast(
+      copied
+        ? 'CSS snippet copied to clipboard'
+        : 'Failed to copy — your browser may not support clipboard access',
+      copied ? 'success' : 'error'
+    );
+  }, [tool.state.data.dataUri, showToast]);
+
+  /**
+   * Copies the generated data URI as an HTML snippet (`<img src="...">` etc.).
+   */
+  const handleCopyAsHtml = useCallback(async () => {
+    if (!tool.state.data.dataUri) {
+      showToast('Nothing to copy — generate a data URI first', 'error');
+      return;
+    }
+    const mime =
+      tool.state.data.selectedMimeType === 'custom'
+        ? tool.state.data.customMimeType
+        : tool.state.data.selectedMimeType;
+    const copied = await copyTextToClipboard(buildHtmlSnippet(tool.state.data.dataUri, mime));
+    showToast(
+      copied
+        ? 'HTML snippet copied to clipboard'
+        : 'Failed to copy — your browser may not support clipboard access',
+      copied ? 'success' : 'error'
+    );
+  }, [
+    tool.state.data.dataUri,
+    tool.state.data.selectedMimeType,
+    tool.state.data.customMimeType,
+    showToast,
+  ]);
 
   /**
    * Reads text or image from the clipboard and populates the appropriate input.
@@ -505,7 +563,12 @@ export default function ToolClient() {
 
   const toolbarContent = (
     <>
-      <ToolToolbar hasDataUri={!!tool.state.data.dataUri} onCopyUri={handleCopyUri} />
+      <ToolToolbar
+        hasDataUri={!!tool.state.data.dataUri}
+        onCopyUri={handleCopyUri}
+        onCopyAsCss={handleCopyAsCss}
+        onCopyAsHtml={handleCopyAsHtml}
+      />
       <ImportExport
         formats={tool.supportedFormats}
         onExport={tool.handleExport}

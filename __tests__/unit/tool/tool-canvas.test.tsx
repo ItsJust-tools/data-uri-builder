@@ -56,4 +56,34 @@ describe('ToolCanvas', () => {
     fireEvent.click(screen.getByRole('button', { name: /Copy data URI/i }));
     expect(onCopyUri).toHaveBeenCalledOnce();
   });
+
+  it('renders copy-as-CSS and copy-as-HTML buttons', () => {
+    const onCopyAsCss = vi.fn();
+    const onCopyAsHtml = vi.fn();
+    const onCopyUri = vi.fn();
+    const state: DataUriState = {
+      ...baseState,
+      dataUri: 'data:image/png;base64,AAA',
+      selectedMimeType: 'image/png',
+    };
+    render(
+      <ToolCanvas
+        state={state}
+        onCopyUri={onCopyUri}
+        onCopyAsCss={onCopyAsCss}
+        onCopyAsHtml={onCopyAsHtml}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Copy as CSS/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Copy as HTML/i }));
+    expect(onCopyAsCss).toHaveBeenCalledOnce();
+    expect(onCopyAsHtml).toHaveBeenCalledOnce();
+    expect(onCopyUri).not.toHaveBeenCalled();
+  });
+
+  it('hides copy-as buttons when no data URI exists (empty state)', () => {
+    render(<ToolCanvas state={baseState} onCopyAsCss={vi.fn()} onCopyAsHtml={vi.fn()} />);
+    expect(screen.queryByRole('button', { name: /Copy as CSS/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Copy as HTML/i })).not.toBeInTheDocument();
+  });
 });
