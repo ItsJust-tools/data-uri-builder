@@ -14,6 +14,10 @@ export const EMPTY_STATE_TEXT = 'Type text, upload a file, or enter a URL to gen
  * (mobile viewports default to collapsed).
  */
 export async function openSidebar(page: Page) {
+  // Wait for hydration before reading/toggling: the initial server render
+  // reports the mobile-collapsed default, and a toggle fired before React
+  // hydrates hits a stale state that the hydration re-render reverts.
+  await waitForHydration(page);
   const sidebar = page.locator('.tool-shell-sidebar');
   if ((await sidebar.count()) === 0) return;
 
@@ -22,6 +26,26 @@ export async function openSidebar(page: Page) {
     await page.locator('[data-sidebar-toggle]').click();
     await sidebar.waitFor({ state: 'visible' });
   }
+}
+
+/**
+ * Closes the options sidebar on mobile viewports, where it renders as a
+ * modal dialog whose backdrop intercepts pointer events aimed at the
+ * toolbar (Export, Copy URI, ...). The toggle click is dispatched through
+ * the DOM because the backdrop also sits above the toggle button itself.
+ */
+export async function closeSidebar(page: Page) {
+  await waitForHydration(page);
+  const sidebar = page.locator('.tool-shell-sidebar');
+  if ((await sidebar.count()) === 0) return;
+
+  const isOpen = await sidebar.evaluate((el) => !el.classList.contains('collapsed'));
+  if (!isOpen) return;
+
+  await page.locator('[data-sidebar-toggle]').evaluate((el) => {
+    (el as HTMLElement).click();
+  });
+  await page.locator('.sidebar-backdrop').waitFor({ state: 'detached', timeout: 5000 });
 }
 
 /**

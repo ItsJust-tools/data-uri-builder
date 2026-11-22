@@ -69,6 +69,7 @@ test.describe('State persistence', () => {
       fileBytes: '',
       error: '',
       urlInput: '',
+      optimizeSvg: false,
     };
     const encoded = compressToEncodedURIComponent(JSON.stringify(state));
     expect(encoded).toBeTruthy();

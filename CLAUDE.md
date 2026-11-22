@@ -273,19 +273,19 @@ To protect the template baseline, treat files according to these boundaries. Do 
 
 These files are part of the template infrastructure. They must not be edited when customizing a tool. If they are inadequate for a tool's needs, report a template bug per the Agent Workflow Rules.
 
-| Path                                                                                                                       | Why read-only                                                                            |
-| -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/core/**/*`                                                                                                       | Shared core library (`@itsjust/core`). All hooks, components, engines, types, and tests. |
-| `src/lib/**/*`                                                                                                             | Generic utilities (`seo.ts`, `utils.ts`).                                                |
-| `src/app/layout.tsx`, `error.tsx`, `not-found.tsx`, `robots.ts`, `sitemap.ts`, `manifest.ts`, `json-ld.tsx`, `globals.css` | App shell, metadata, and global styles.                                                  |
-| `src/app/tool-client-wrapper.tsx`                                                                                          | Generic dynamic-import wrapper.                                                          |
-| `src/app/page.tsx`                                                                                                         | Generic tool page shell (imports `JsonLd` and `ToolClient`).                             |
-| `src/app/apple-icon.svg`, `icon.svg`                                                                                       | App icons.                                                                               |
-| `scripts/**/*`                                                                                                             | Preflight and bundle-size checks.                                                        |
-| `next.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `postcss.config.mjs`, `eslint.config.mjs`, `tsconfig.json`   | Build and tooling configs.                                                               |
-| `packages/core/package.json`, `tsconfig.json`, `tsup.config.ts`                                                            | Core build configs.                                                                      |
-| `Dockerfile`, `.github/**/*`, `.husky/**/*`                                                                                | DevOps and CI/CD.                                                                        |
-| `public/apple-touch-icon.svg`, `icon-192.svg`, `icon-512.svg`                                                              | PWA icons.                                                                               |
+| Path                                                                                                                       | Why read-only                                                                                          |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `packages/core/**/*`                                                                                                       | Shared core library (`@itsjust/core`). All hooks, components, engines, types, and tests.               |
+| `src/lib/**/*`                                                                                                             | Generic utilities (`seo.ts`, `utils.ts`).                                                              |
+| `src/app/layout.tsx`, `error.tsx`, `not-found.tsx`, `robots.ts`, `sitemap.ts`, `manifest.ts`, `json-ld.tsx`, `globals.css` | App shell, metadata, and global styles.                                                                |
+| `src/app/tool-client-wrapper.tsx`                                                                                          | Generic dynamic-import wrapper.                                                                        |
+| `src/app/page.tsx`                                                                                                         | Generic tool page shell (imports `JsonLd` and `ToolClient`).                                           |
+| `src/app/apple-icon.svg`, `icon.svg`                                                                                       | App icons.                                                                                             |
+| `scripts/**/*`                                                                                                             | Preflight and bundle-size checks.                                                                      |
+| `next.config.ts`, `vitest.config.ts`, `playwright.config.ts`, `postcss.config.mjs`, `eslint.config.mjs`, `tsconfig.json`   | Build and tooling configs.                                                                             |
+| `packages/core/package.json`, `tsconfig.json`, `tsup.config.ts`                                                            | Core build configs.                                                                                    |
+| `Dockerfile`, `.github/**/*`, `.husky/**/*`                                                                                | DevOps and CI/CD.                                                                                      |
+| `public/apple-touch-icon.svg`, `icon-192.svg`, `icon-512.svg`                                                              | PWA icons.                                                                                             |
 | `public/maskable-icon-192.png`, `maskable-icon-512.png`                                                                    | Full-bleed maskable PWA icons (`purpose: "maskable"`), built by `scripts/generate-maskable-icons.mjs`. |
 
 ### Editable (Tool Customization)

@@ -50,38 +50,46 @@ describe('encodeBytesToBase64OffMainThread', () => {
     expect(['sync', 'main-thread-chunked', 'worker']).toContain(strategy);
   });
 
-  it('uses the worker path for very large payloads when Worker is available', async () => {
-    const big = new Uint8Array(10 * 1024 * 1024 + 16);
-    for (let i = 0; i < big.length; i++) big[i] = (i * 7) % 256;
-    const { base64, strategy } = await encodeBytesToBase64OffMainThread(big.buffer);
-    if (typeof Worker !== 'undefined') {
-      expect(strategy).toBe('worker');
-    } else {
-      expect(['main-thread-chunked', 'sync']).toContain(strategy);
-    }
-    // Spot check: decode prefix back
-    const prefixBinary = atob(base64.slice(0, 40));
-    expect(prefixBinary.length).toBeGreaterThan(0);
-  });
-
-  it('falls back to main-thread when Worker construction throws', async () => {
-    const OriginalWorker = globalThis.Worker;
-    const big = new Uint8Array(10 * 1024 * 1024 + 16);
-    class BrokenWorker {
-      constructor() {
-        throw new Error('no workers here');
+  it(
+    'uses the worker path for very large payloads when Worker is available',
+    async () => {
+      const big = new Uint8Array(10 * 1024 * 1024 + 16);
+      for (let i = 0; i < big.length; i++) big[i] = (i * 7) % 256;
+      const { base64, strategy } = await encodeBytesToBase64OffMainThread(big.buffer);
+      if (typeof Worker !== 'undefined') {
+        expect(strategy).toBe('worker');
+      } else {
+        expect(['main-thread-chunked', 'sync']).toContain(strategy);
       }
-    }
-    // @ts-expect-error test stub
-    globalThis.Worker = BrokenWorker;
-    try {
-      const { strategy, base64 } = await encodeBytesToBase64OffMainThread(big.buffer);
-      expect(['main-thread-chunked', 'sync']).toContain(strategy);
-      expect(base64.length).toBeGreaterThan(0);
-    } finally {
-      globalThis.Worker = OriginalWorker;
-    }
-  });
+      // Spot check: decode prefix back
+      const prefixBinary = atob(base64.slice(0, 40));
+      expect(prefixBinary.length).toBeGreaterThan(0);
+    },
+    30_000 // 10MB fill + base64 encode exceeds the 5s default on slow/loaded runners
+  );
+
+  it(
+    'falls back to main-thread when Worker construction throws',
+    async () => {
+      const OriginalWorker = globalThis.Worker;
+      const big = new Uint8Array(10 * 1024 * 1024 + 16);
+      class BrokenWorker {
+        constructor() {
+          throw new Error('no workers here');
+        }
+      }
+      // @ts-expect-error test stub
+      globalThis.Worker = BrokenWorker;
+      try {
+        const { strategy, base64 } = await encodeBytesToBase64OffMainThread(big.buffer);
+        expect(['main-thread-chunked', 'sync']).toContain(strategy);
+        expect(base64.length).toBeGreaterThan(0);
+      } finally {
+        globalThis.Worker = OriginalWorker;
+      }
+    },
+    30_000 // 10MB fill + base64 encode exceeds the 5s default on slow/loaded runners
+  );
 });
 
 describe('readFileAsBase64', () => {

@@ -3,6 +3,7 @@ import {
   TEXT_INPUT_NAME,
   EMPTY_STATE_TEXT,
   openSidebar,
+  closeSidebar,
   fillTextarea,
   fillInput,
   clickInSidebar,
@@ -106,6 +107,7 @@ test.describe('Data URI Builder E2E', () => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/');
     await generateFromText(page, 'Test copy');
+    await closeSidebar(page);
 
     await page
       .getByRole('application', { name: 'Data URI Builder' })

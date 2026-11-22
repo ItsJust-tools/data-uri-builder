@@ -3,6 +3,7 @@ import {
   TEXT_INPUT_NAME,
   EMPTY_STATE_TEXT,
   openSidebar,
+  closeSidebar,
   outputField,
   generateFromText,
   clickInSidebar,
@@ -21,6 +22,7 @@ const VALID_STATE = {
   fileBytes: '',
   error: '',
   urlInput: '',
+  optimizeSvg: false,
 };
 
 async function downloadPayload(download: Download): Promise<string> {
@@ -43,6 +45,7 @@ test.describe('Export', () => {
   test('exports the full state as JSON', async ({ page }) => {
     await page.goto('/');
     await generateFromText(page, 'export-me');
+    await closeSidebar(page);
 
     const download = await exportAs(page, /JSON Data/);
     expect(download.suggestedFilename()).toMatch(/\.json$/);
@@ -62,6 +65,7 @@ test.describe('Export', () => {
   test('exports the canvas as PNG', async ({ page }) => {
     await page.goto('/');
     await generateFromText(page, 'png export');
+    await closeSidebar(page);
 
     const download = await exportAs(page, /PNG Image/);
     expect(download.suggestedFilename()).toMatch(/\.png$/);
@@ -81,6 +85,7 @@ test.describe('Export', () => {
   test('offers every configured export format', async ({ page }) => {
     await page.goto('/');
     await generateFromText(page, 'formats');
+    await closeSidebar(page);
 
     await page.getByRole('button', { name: 'Export' }).first().click();
     const listbox = page.getByRole('listbox', { name: 'Export' });
@@ -99,6 +104,7 @@ test.describe('Export', () => {
   test('JSON export payload round-trips back through import', async ({ page }) => {
     await page.goto('/');
     await generateFromText(page, 'round trip');
+    await closeSidebar(page);
     const download = await exportAs(page, /JSON Data/);
     const payload = await downloadPayload(download);
 
